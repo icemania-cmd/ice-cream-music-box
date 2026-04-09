@@ -94,6 +94,16 @@ export function useAudioEngine(initialTracks: Track[]) {
   }, []);
 
   // ──────────────────────────────────────────
+  // AudioContext の自動再開（スクロール等で停止した場合）
+  // ──────────────────────────────────────────
+  const resumeCtx = useCallback(() => {
+    const ctx = ctxRef.current;
+    if (ctx && ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
+    }
+  }, []);
+
+  // ──────────────────────────────────────────
   // AnalyserNode 遅延初期化
   // ──────────────────────────────────────────
   const ensureAnalyser = useCallback(() => {
@@ -104,6 +114,14 @@ export function useAudioEngine(initialTracks: Track[]) {
       const AC = window.AudioContext || (window as WinWithWebkit).webkitAudioContext;
       if (!AC) return;
       const ctx = new AC();
+
+      // スクロールや画面操作でブラウザがAudioContextを自動停止した場合に即再開
+      ctx.onstatechange = () => {
+        if (ctx.state === "suspended" && !wantsPausedRef.current) {
+          ctx.resume().catch(() => {});
+        }
+      };
+
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 128;
       analyser.smoothingTimeConstant = 0.78;
@@ -175,6 +193,20 @@ export function useAudioEngine(initialTracks: Track[]) {
     audio.addEventListener("ended",          onEnded);
     audio.src = getAudioUrl(tracksRef.current[0].filename);
 
+    // ─────────────────────────────────────────────────────
+    // スクロール・タッチ・画面復帰時にAudioContextを再開する
+    // モバイルブラウザはスクロール中にAudioContextを自動停止することがある
+    // ─────────────────────────────────────────────────────
+    const handleResume = () => resumeCtx();
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") resumeCtx();
+    };
+
+    document.addEventListener("scroll",           handleResume,     { passive: true });
+    document.addEventListener("touchstart",        handleResume,     { passive: true });
+    document.addEventListener("touchend",          handleResume,     { passive: true });
+    document.addEventListener("visibilitychange",  handleVisibility);
+
     return () => {
       audio.removeEventListener("timeupdate",    onTimeUpdate);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
@@ -182,6 +214,11 @@ export function useAudioEngine(initialTracks: Track[]) {
       audio.pause();
       audio.src = "";
       ctxRef.current?.close();
+
+      document.removeEventListener("scroll",           handleResume);
+      document.removeEventListener("touchstart",        handleResume);
+      document.removeEventListener("touchend",          handleResume);
+      document.removeEventListener("visibilitychange",  handleVisibility);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
