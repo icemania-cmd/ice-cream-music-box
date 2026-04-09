@@ -1,6 +1,6 @@
 {
   "name": "ICE CREAM MUSIC BOX",
-  "short_name": "ICE CREAM\nMUSIC BOX",
+  "short_name": "ICE CREAM",
   "description": "あいぱくのアイスクリームミュージックBGMプレイヤー",
   "start_url": "/",
   "scope": "/",

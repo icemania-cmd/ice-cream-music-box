@@ -9,6 +9,8 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+type WinWithPrompt = typeof window & { __icmb_installPrompt?: BeforeInstallPromptEvent };
+
 export default function InstallBanner() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [platform, setPlatform] = useState<Platform>("other");
@@ -30,7 +32,14 @@ export default function InstallBanner() {
       setPlatform("ios");
     }
 
-    // Android Chrome: beforeinstallpromptイベントをキャッチ
+    // layout.tsx の早期スクリプトでキャプチャ済みのプロンプトを取得
+    const cached = (window as WinWithPrompt).__icmb_installPrompt;
+    if (cached) {
+      setDeferredPrompt(cached);
+      setPlatform("android");
+    }
+
+    // 早期キャプチャされていない場合に備えてイベントリスナーも設定
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);

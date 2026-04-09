@@ -55,6 +55,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" className={`${mplus.variable} ${shippori.variable} h-full`}>
+      <head>
+        {/* beforeinstallprompt を React hydration より前にキャプチャ */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__icmb_installPrompt=e;});`,
+          }}
+        />
+      </head>
       <body
         className="min-h-full flex flex-col"
         style={{
