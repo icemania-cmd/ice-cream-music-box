@@ -15,9 +15,9 @@ import LiveListeners from "./LiveListeners";
 import {
   IconPlay, IconPause, IconNext, IconPrev,
   IconShuffle, IconRepeat, IconRepeatOne,
-  IconVolume, IconMute,
   IconExpand, IconList, IconTrophy,
 } from "./FlatIcons";
+import { Volume1, Volume2, VolumeX, Zap } from "lucide-react";
 
 type Tab = "playlist" | "ranking";
 
@@ -71,6 +71,195 @@ function ToneArm({ isPlaying }: { isPlaying: boolean }) {
   );
 }
 
+// ──────────────────────────────────────────────────────────────
+// VolumeControl: おしゃれな大型ボリュームコントロール
+// ──────────────────────────────────────────────────────────────
+function VolumeControl({ volume, onChange }: { volume: number; onChange: (v: number) => void }) {
+  const isMuted = volume === 0;
+  const isBoost = volume > 1;
+  const pct = volume / 2; // スライダー上の位置（0-1）
+
+  // 音量アイコン: ミュート→Volume1→Volume2→ブースト(Zap)
+  const VolumeIcon = () => {
+    if (isMuted) return <VolumeX size={18} color="#8B6A4A" strokeWidth={1.8} />;
+    if (isBoost)  return <Zap size={18} color="#D65076" strokeWidth={1.8} />;
+    if (volume > 0.5) return <Volume2 size={18} color="#B8800A" strokeWidth={1.8} />;
+    return <Volume1 size={18} color="#B8800A" strokeWidth={1.8} />;
+  };
+
+  // つまみのスタイル
+  const thumbBg = isBoost
+    ? "radial-gradient(circle at 38% 35%, #F09BB8, #D65076 55%, #A83560)"
+    : "radial-gradient(circle at 38% 35%, #F0C84A, #B8800A 55%, #8B5E00)";
+  const thumbShadow = isBoost
+    ? "0 2px 14px rgba(214,80,118,0.55), inset 0 1px 0 rgba(255,255,255,0.35)"
+    : "0 2px 14px rgba(184,128,10,0.5), inset 0 1px 0 rgba(255,255,255,0.35)";
+
+  // つまみ位置: calc(pct * 100% + (14 - pct * 28)px) = 左端14px、右端calc(100%-14px)
+  const thumbLeft = `calc(${pct * 100}% + ${14 - pct * 28}px)`;
+
+  const presets = [
+    { label: "MUTE", value: 0, active: isMuted, boost: false },
+    { label: "100%", value: 1, active: Math.abs(volume - 1) < 0.02, boost: false },
+    { label: "MAX", value: 2, active: Math.abs(volume - 2) < 0.02, boost: true },
+  ];
+
+  return (
+    <div className="w-full flex flex-col" style={{ gap: 10 }}>
+      {/* ヘッダー行: アイコン＋VOLUME＋数値 */}
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onChange(isMuted ? 0.7 : 0)}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 2, display: "flex", alignItems: "center", borderRadius: 4 }}
+            title={isMuted ? "ミュート解除" : "ミュート"}
+          >
+            <VolumeIcon />
+          </button>
+          <span style={{
+            fontSize: 9, color: "#8B6A4A", letterSpacing: "0.2em",
+            fontFamily: "var(--font-mplus), sans-serif",
+          }}>VOLUME</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {isBoost && (
+            <span style={{
+              fontSize: 8, padding: "1px 6px", borderRadius: 3,
+              background: "rgba(214,80,118,0.12)", border: "1px solid rgba(214,80,118,0.35)",
+              color: "#D65076", letterSpacing: "0.1em",
+              fontFamily: "var(--font-mplus), sans-serif",
+            }}>BOOST</span>
+          )}
+          <span style={{
+            fontSize: 16, fontWeight: 700,
+            color: isBoost ? "#D65076" : "#B8800A",
+            fontVariantNumeric: "tabular-nums",
+            fontFamily: "var(--font-mplus), sans-serif",
+            textShadow: isBoost ? "0 0 10px rgba(214,80,118,0.35)" : "none",
+            transition: "color 0.3s, text-shadow 0.3s",
+            minWidth: 48, textAlign: "right",
+          }}>
+            {Math.round(volume * 100)}%
+          </span>
+        </div>
+      </div>
+
+      {/* スライダー本体 */}
+      <div className="relative w-full" style={{ height: 48 }}>
+        {/* トラック背景（全体） */}
+        <div style={{
+          position: "absolute", left: 14, right: 14,
+          top: "50%", transform: "translateY(-50%)",
+          height: 8, borderRadius: 4,
+          background: "rgba(60,30,10,0.08)",
+          border: "1px solid rgba(60,30,10,0.05)",
+        }} />
+
+        {/* 通常ゾーンフィル (0→100%) */}
+        <div style={{
+          position: "absolute", left: 14,
+          top: "50%", transform: "translateY(-50%)",
+          height: 8,
+          width: `calc(${Math.min(volume, 1) * 50}% - ${Math.min(volume, 1) * 14}px)`,
+          background: "linear-gradient(90deg, #C8860A, #E6A820)",
+          borderRadius: "4px 0 0 4px",
+          pointerEvents: "none", zIndex: 1,
+          transition: "width 0.05s",
+        }} />
+
+        {/* ブーストゾーンフィル (100%→200%) */}
+        <div style={{
+          position: "absolute",
+          left: `calc(50% + 0px)`,
+          top: "50%", transform: "translateY(-50%)",
+          height: 8,
+          width: `calc(${Math.max(0, volume - 1) * 50}% - ${Math.max(0, volume - 1) * 14}px)`,
+          background: "linear-gradient(90deg, #E6A820, #D65076)",
+          pointerEvents: "none", zIndex: 1,
+          transition: "width 0.05s",
+        }} />
+
+        {/* 100%区切りライン */}
+        <div style={{
+          position: "absolute", left: "50%",
+          top: "50%", transform: "translate(-50%, -50%)",
+          width: 2, height: 20, borderRadius: 1,
+          background: isBoost ? "rgba(214,80,118,0.6)" : "rgba(139,106,74,0.25)",
+          zIndex: 2, transition: "background 0.3s",
+        }} />
+
+        {/* 100%ラベル */}
+        <div style={{
+          position: "absolute", left: "50%", bottom: 2,
+          transform: "translateX(-50%)",
+          fontSize: 8, color: "rgba(139,106,74,0.45)",
+          letterSpacing: "0.04em",
+          fontFamily: "var(--font-mplus), sans-serif",
+          pointerEvents: "none",
+        }}>100%</div>
+
+        {/* range input（透明・クリック受付） */}
+        <input
+          type="range" min={0} max={2} step={0.01} value={volume}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+          className="volume-range-input"
+          style={{
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%",
+            opacity: 0, cursor: "pointer", zIndex: 4, margin: 0,
+          }}
+        />
+
+        {/* カスタムつまみ */}
+        <div style={{
+          position: "absolute",
+          left: thumbLeft,
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 28, height: 28, borderRadius: "50%",
+          background: thumbBg,
+          boxShadow: thumbShadow,
+          border: "2.5px solid rgba(255,255,255,0.85)",
+          pointerEvents: "none", zIndex: 3,
+          transition: "background 0.3s, box-shadow 0.3s",
+        }} />
+      </div>
+
+      {/* プリセットボタン */}
+      <div className="flex gap-2 w-full">
+        {presets.map(({ label, value, active, boost }) => (
+          <button
+            key={label}
+            onClick={() => onChange(value)}
+            className="flex-1 transition-all active:scale-95"
+            style={{
+              padding: "7px 4px",
+              borderRadius: 8,
+              background: active
+                ? (boost ? "rgba(214,80,118,0.14)" : "rgba(184,128,10,0.14)")
+                : "rgba(60,30,10,0.04)",
+              border: active
+                ? `1.5px solid ${boost ? "rgba(214,80,118,0.5)" : "rgba(184,128,10,0.45)"}`
+                : "1.5px solid rgba(139,106,74,0.15)",
+              color: active
+                ? (boost ? "#D65076" : "#B8800A")
+                : "#8B6A4A",
+              fontSize: 10, fontWeight: active ? 700 : 400,
+              letterSpacing: "0.1em",
+              fontFamily: "var(--font-mplus), sans-serif",
+              cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 3,
+            }}
+          >
+            {boost && <Zap size={9} strokeWidth={2} />}
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function fmt(sec: number) {
   if (!isFinite(sec) || isNaN(sec) || sec < 0) return "0:00";
   const m = Math.floor(sec / 60);
@@ -94,7 +283,6 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
   } = engine;
 
   const elapsed = progress * duration;
-  const isMuted = volume === 0;
 
   // 秒単位でシーク（±15秒など）
   const seekRelative = useCallback((delta: number) => {
@@ -435,22 +623,8 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                 </button>
               </div>
 
-              {/* ── ボリューム ── */}
-              <div className="flex items-center gap-2 w-full" style={{ maxWidth: 200 }}>
-                <button onClick={() => changeVolume(isMuted ? 0.7 : 0)}
-                  style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, flexShrink: 0 }}>
-                  {isMuted ? <IconMute size={16} color="#8B6A4A" /> : <IconVolume size={16} color="#8B6A4A" />}
-                </button>
-                <div className="relative flex items-center flex-1" style={{ height: 20 }}>
-                  <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-full"
-                    style={{ height: 3, background: "rgba(60,30,10,0.1)" }} />
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 rounded-full pointer-events-none"
-                    style={{ height: 3, width: `${volume * 100}%`, background: "rgba(184,128,10,0.45)" }} />
-                  <input type="range" min={0} max={1} step={0.01} value={volume}
-                    onChange={(e) => changeVolume(parseFloat(e.target.value))}
-                    className="w-full absolute inset-0 opacity-0 cursor-pointer" />
-                </div>
-              </div>
+              {/* ── ボリューム（リデザイン） ── */}
+              <VolumeControl volume={volume} onChange={changeVolume} />
 
               {/* 仕切り */}
               <div className="w-full flex items-center gap-2">
@@ -571,6 +745,14 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
         input[type=range]::-moz-range-thumb {
           width: 14px; height: 14px; border-radius: 50%;
           background: #B8800A; border: 2px solid #FFF9F0; cursor: pointer;
+        }
+        /* ボリュームスライダーはカスタムつまみを使うので非表示 */
+        .volume-range-input::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          width: 28px; height: 28px; opacity: 0;
+        }
+        .volume-range-input::-moz-range-thumb {
+          width: 28px; height: 28px; opacity: 0; border: none;
         }
       `}</style>
     </>

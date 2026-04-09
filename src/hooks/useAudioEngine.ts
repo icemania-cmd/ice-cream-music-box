@@ -21,6 +21,8 @@ export function useAudioEngine(initialTracks: Track[]) {
   const audioRef      = useRef<HTMLAudioElement | null>(null);
   const ctxRef        = useRef<AudioContext | null>(null);
   const analyserRef   = useRef<AnalyserNode | null>(null);
+  const gainNodeRef   = useRef<GainNode | null>(null);
+  const volumeRef     = useRef(0.7); // GainNode作成前のボリューム値を保持
   const sourceConnectedRef = useRef(false);
   const shuffleOrderRef    = useRef<number[]>([]);
 
@@ -154,11 +156,16 @@ export function useAudioEngine(initialTracks: Track[]) {
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 128;
       analyser.smoothingTimeConstant = 0.78;
+      const gain = ctx.createGain();
+      // 既にボリュームがブースト状態なら即適用
+      gain.gain.value = Math.max(1, volumeRef.current);
       const source = ctx.createMediaElementSource(audio);
-      source.connect(analyser);
+      source.connect(gain);
+      gain.connect(analyser);
       analyser.connect(ctx.destination);
       ctxRef.current        = ctx;
       analyserRef.current   = analyser;
+      gainNodeRef.current   = gain;
       sourceConnectedRef.current = true;
     } catch {
       // 失敗しても再生は続ける
@@ -286,8 +293,16 @@ export function useAudioEngine(initialTracks: Track[]) {
   }, []);
 
   const changeVolume = useCallback((v: number) => {
-    setVolume(v);
-    if (audioRef.current) audioRef.current.volume = v;
+    const clamped = Math.max(0, Math.min(v, 2));
+    setVolume(clamped);
+    volumeRef.current = clamped;
+    if (audioRef.current) {
+      // HTML5 audio.volume は 0-1 の範囲。1を超える分はGainNodeで増幅
+      audioRef.current.volume = Math.min(clamped, 1);
+    }
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = Math.max(1, clamped);
+    }
   }, []);
 
   const selectTrack = useCallback(
