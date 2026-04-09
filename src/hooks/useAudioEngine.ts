@@ -27,11 +27,22 @@ export function useAudioEngine(initialTracks: Track[]) {
   const isPlayingRef = useRef(isPlaying);
   const shuffleRef = useRef(shuffle);
   const repeatRef = useRef(repeat);
+  /** 毎レンダーで最新tracksを参照（onEnded内のstale closure防止） */
+  const tracksRef = useRef(tracks);
+  /**
+   * play()はPromiseが非同期のため、pause()後にthen()が遅れて発火し
+   * isPlayingをtrueに上書きしてしまう競合を防ぐための世代カウンタ
+   * pause()またはselectTrack()のたびにインクリメントし、
+   * then()内で自分の世代番号が最新かどうか確認してからsetIsPlayingを呼ぶ
+   */
+  const playGenRef = useRef(0);
 
+  // refを毎レンダーで最新値に更新
   currentIndexRef.current = currentIndex;
   isPlayingRef.current = isPlaying;
   shuffleRef.current = shuffle;
   repeatRef.current = repeat;
+  tracksRef.current = tracks;
 
   const buildShuffleOrder = useCallback(
     (currentIdx: number) => {
@@ -56,7 +67,7 @@ export function useAudioEngine(initialTracks: Track[]) {
       if (!AC) return;
       const ctx = new AC();
       const analyser = ctx.createAnalyser();
-      analyser.fftSize = 128;       // 64 bins
+      analyser.fftSize = 128;
       analyser.smoothingTimeConstant = 0.78;
       const source = ctx.createMediaElementSource(audio);
       source.connect(analyser);
@@ -73,8 +84,6 @@ export function useAudioEngine(initialTracks: Track[]) {
     const audio = new Audio();
     audio.volume = volume;
     audio.preload = "metadata";
-    // crossOrigin="anonymous" はR2公開URLがCORSヘッダーを返す場合のみ有効
-    // r2.devドメインではCORSが効かないため設定しない（音楽再生を優先）
     audioRef.current = audio;
 
     const onTimeUpdate = () => {
@@ -84,18 +93,24 @@ export function useAudioEngine(initialTracks: Track[]) {
     };
     const onLoadedMetadata = () => setDuration(audio.duration);
     const onEnded = () => {
+      // tracksRefで最新のtracksを参照（stale closure防止）
+      const currentTracks = tracksRef.current;
       const ci = currentIndexRef.current;
       const nextIdx = getNextIndex(
-        ci, tracks.length,
+        ci, currentTracks.length,
         shuffleRef.current, repeatRef.current, shuffleOrderRef.current
       );
       if (nextIdx === null) { setIsPlaying(false); setProgress(1); return; }
       setCurrentIndex(nextIdx);
       currentIndexRef.current = nextIdx;
-      const nextTrack = tracks[nextIdx];
+      const nextTrack = currentTracks[nextIdx];
       audio.src = getAudioUrl(nextTrack.filename);
       audio.currentTime = 0;
-      audio.play().catch(() => {});
+      // 世代カウンタで競合を防ぐ
+      const gen = ++playGenRef.current;
+      audio.play()
+        .then(() => { if (playGenRef.current === gen) setIsPlaying(true); })
+        .catch(() => {});
       setProgress(0);
       setPlayCounts((prev) => ({ ...prev, [nextTrack.id]: (prev[nextTrack.id] ?? 0) + 1 }));
     };
@@ -103,7 +118,7 @@ export function useAudioEngine(initialTracks: Track[]) {
     audio.addEventListener("timeupdate", onTimeUpdate);
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
     audio.addEventListener("ended", onEnded);
-    audio.src = getAudioUrl(tracks[0].filename);
+    audio.src = getAudioUrl(tracksRef.current[0].filename);
 
     return () => {
       audio.removeEventListener("timeupdate", onTimeUpdate);
@@ -123,10 +138,16 @@ export function useAudioEngine(initialTracks: Track[]) {
     const audio = audioRef.current;
     if (!audio) return;
     if (ctxRef.current?.state === "suspended") ctxRef.current.resume();
-    audio.play().then(() => setIsPlaying(true)).catch(() => {});
+    // 世代カウンタをインクリメント。このplay()の.then()だけがsetIsPlayingを呼べる
+    const gen = ++playGenRef.current;
+    audio.play()
+      .then(() => { if (playGenRef.current === gen) setIsPlaying(true); })
+      .catch(() => {});
   }, [ensureAnalyser]);
 
   const pause = useCallback(() => {
+    // カウンタをインクリメントして、保留中のplay().then()を無効化
+    playGenRef.current++;
     audioRef.current?.pause();
     setIsPlaying(false);
   }, []);
@@ -151,6 +172,8 @@ export function useAudioEngine(initialTracks: Track[]) {
       setCurrentIndex(idx);
       currentIndexRef.current = idx;
       const t = tracks[idx];
+      // src変更前にカウンタをインクリメント（前のplay().then()を無効化）
+      playGenRef.current++;
       audio.src = getAudioUrl(t.filename);
       audio.currentTime = 0;
       setProgress(0);
@@ -158,7 +181,10 @@ export function useAudioEngine(initialTracks: Track[]) {
       if (wasPlaying) {
         ensureAnalyser();
         if (ctxRef.current?.state === "suspended") ctxRef.current.resume();
-        audio.play().then(() => setIsPlaying(true)).catch(() => {});
+        const gen = ++playGenRef.current;
+        audio.play()
+          .then(() => { if (playGenRef.current === gen) setIsPlaying(true); })
+          .catch(() => {});
         setPlayCounts((prev) => ({ ...prev, [t.id]: (prev[t.id] ?? 0) + 1 }));
       }
     },
@@ -167,16 +193,16 @@ export function useAudioEngine(initialTracks: Track[]) {
 
   const next = useCallback(() => {
     const ci = currentIndexRef.current;
-    const nextIdx = getNextIndex(ci, tracks.length, shuffleRef.current, repeatRef.current, shuffleOrderRef.current);
+    const nextIdx = getNextIndex(ci, tracksRef.current.length, shuffleRef.current, repeatRef.current, shuffleOrderRef.current);
     if (nextIdx !== null) selectTrack(nextIdx);
-  }, [tracks.length, selectTrack]);
+  }, [selectTrack]);
 
   const prev = useCallback(() => {
     const audio = audioRef.current;
     if (audio && audio.currentTime > 3) { audio.currentTime = 0; setProgress(0); return; }
-    const prevIdx = getPrevIndex(currentIndexRef.current, tracks.length, shuffleRef.current, shuffleOrderRef.current);
+    const prevIdx = getPrevIndex(currentIndexRef.current, tracksRef.current.length, shuffleRef.current, shuffleOrderRef.current);
     selectTrack(prevIdx);
-  }, [tracks.length, selectTrack]);
+  }, [selectTrack]);
 
   const toggleShuffle = useCallback(() => {
     setShuffle((s) => { const n = !s; if (n) buildShuffleOrder(currentIndexRef.current); return n; });
@@ -188,22 +214,20 @@ export function useAudioEngine(initialTracks: Track[]) {
 
   /**
    * 曲リストをまるごと入れ替える（フォルダ再スキャン後に呼ぶ）
-   * 再生中の曲が新リストに残っていれば継続、なければ先頭に移動
    */
   const reloadTracks = useCallback(
     (newTracks: Track[]) => {
       if (newTracks.length === 0) return;
       setTracks(newTracks);
-      // 現在の曲が新リストに存在するか確認
-      const currentFilename = tracks[currentIndexRef.current]?.filename;
+      const currentFilename = tracksRef.current[currentIndexRef.current]?.filename;
       const newIdx = newTracks.findIndex((t) => t.filename === currentFilename);
       if (newIdx >= 0) {
         setCurrentIndex(newIdx);
         currentIndexRef.current = newIdx;
       } else {
-        // 現在曲が消えた → 先頭へ
         const audio = audioRef.current;
         if (audio) {
+          playGenRef.current++; // 競合防止
           audio.src = getAudioUrl(newTracks[0].filename);
           audio.currentTime = 0;
         }
@@ -213,7 +237,7 @@ export function useAudioEngine(initialTracks: Track[]) {
         setIsPlaying(false);
       }
     },
-    [tracks]
+    []
   );
 
   return {
