@@ -73,6 +73,7 @@ export function useAudioEngine(initialTracks: Track[]) {
     const audio = new Audio();
     audio.volume = volume;
     audio.preload = "metadata";
+    audio.crossOrigin = "anonymous"; // Web Audio API (createMediaElementSource) に必要
     audioRef.current = audio;
 
     const onTimeUpdate = () => {
