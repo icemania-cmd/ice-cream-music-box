@@ -78,6 +78,13 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
   const elapsed = progress * duration;
   const isMuted = volume === 0;
 
+  // 秒単位でシーク（±15秒など）
+  const seekRelative = useCallback((delta: number) => {
+    if (!duration) return;
+    const newTime = Math.max(0, Math.min(elapsed + delta, duration));
+    seek(newTime / duration);
+  }, [elapsed, duration, seek]);
+
   // ロック画面・通知バーに再生コントロールを表示
   useMediaSession({
     track, isPlaying, duration, progress,
@@ -308,9 +315,48 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                       boxShadow: "0 1px 6px rgba(100,60,10,0.4)", zIndex: 3,
                     }} />
                 </div>
-                <div className="flex justify-between">
-                  <span style={{ fontSize: 10, color: "#8B6A4A", fontVariantNumeric: "tabular-nums" as const }}>{fmt(elapsed)}</span>
-                  <span style={{ fontSize: 10, color: "#8B6A4A", fontVariantNumeric: "tabular-nums" as const }}>{fmt(duration)}</span>
+                <div className="flex items-center justify-between">
+                  <span style={{ fontSize: 10, color: "#8B6A4A", fontVariantNumeric: "tabular-nums" as const, minWidth: 30 }}>{fmt(elapsed)}</span>
+
+                  {/* ±15秒送りボタン */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => seekRelative(-15)}
+                      title="-15秒"
+                      className="flex items-center gap-0.5 transition-all active:scale-90"
+                      style={{
+                        padding: "2px 7px", borderRadius: 4,
+                        background: "rgba(61,43,26,0.06)",
+                        border: "1px solid rgba(139,106,74,0.25)",
+                        color: "#8B6A4A", fontSize: 9, letterSpacing: "0.04em",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" style={{ marginRight: 1 }}>
+                        <path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="#8B6A4A"/>
+                      </svg>
+                      15
+                    </button>
+                    <button
+                      onClick={() => seekRelative(15)}
+                      title="+15秒"
+                      className="flex items-center gap-0.5 transition-all active:scale-90"
+                      style={{
+                        padding: "2px 7px", borderRadius: 4,
+                        background: "rgba(61,43,26,0.06)",
+                        border: "1px solid rgba(139,106,74,0.25)",
+                        color: "#8B6A4A", fontSize: 9, letterSpacing: "0.04em",
+                        cursor: "pointer",
+                      }}
+                    >
+                      15
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" style={{ marginLeft: 1 }}>
+                        <path d="M12 5V2l4 4-4 4V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z" fill="#8B6A4A"/>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <span style={{ fontSize: 10, color: "#8B6A4A", fontVariantNumeric: "tabular-nums" as const, minWidth: 30, textAlign: "right" }}>{fmt(duration)}</span>
                 </div>
               </div>
 

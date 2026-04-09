@@ -26,6 +26,11 @@ const META_FILE = path.join(AUDIO_DIR, "tracks-meta.json");
 // 並列アップロード数（大きいファイルなので控えめに）
 const CONCURRENCY = 3;
 
+// プレイリストから除外するファイル名（R2には残るが曲一覧に表示しない）
+const EXCLUDED_FILES = [
+  "一日くらい大丈夫(Remastered_v5.5).wav",
+];
+
 // ──────────────────────────────────────────────
 // R2クライアント
 // ──────────────────────────────────────────────
@@ -127,8 +132,12 @@ async function main() {
   const wavFiles = fs
     .readdirSync(AUDIO_DIR)
     .filter((f) => f.toLowerCase().endsWith(".wav"))
+    .filter((f) => !EXCLUDED_FILES.includes(f))
     .sort((a, b) => a.localeCompare(b, "ja"));
 
+  if (EXCLUDED_FILES.length > 0) {
+    console.log(`🚫 除外ファイル: ${EXCLUDED_FILES.join(", ")}\n`);
+  }
   console.log(`📂 WAVファイル: ${wavFiles.length}件\n`);
 
   // 2. tracks-meta.json 読み込み
