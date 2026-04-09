@@ -1,5 +1,5 @@
 // ICE CREAM MUSIC BOX — Service Worker
-const CACHE_NAME = "icmb-v3";
+const CACHE_NAME = "icmb-v4"; // バージョンアップ: v3 → v4
 
 // キャッシュするファイル（アプリシェル）
 const PRECACHE = [
@@ -10,19 +10,27 @@ const PRECACHE = [
 ];
 
 self.addEventListener("install", (event) => {
+  console.log("[SW] Installing version:", CACHE_NAME);
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE))
   );
+  // 待機せず即座にactivateへ移行
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-  // 古いキャッシュを削除
+  console.log("[SW] Activating version:", CACHE_NAME);
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      Promise.all(
+        keys.filter((k) => k !== CACHE_NAME).map((k) => {
+          console.log("[SW] Deleting old cache:", k);
+          return caches.delete(k);
+        })
+      )
     )
   );
+  // 即座に全クライアントを制御下に（controllerchangeイベントがクライアント側で発火する）
   self.clients.claim();
 });
 
@@ -33,10 +41,21 @@ self.addEventListener("fetch", (event) => {
   // APIルートとPOSTリクエストはSWでインターセプトしない（必ずサーバーへ）
   if (url.pathname.startsWith("/api/")) return;
 
-  // ナビゲーションリクエスト（ページ遷移）→ キャッシュ優先
+  // ナビゲーションリクエスト（ページ遷移）→ ネットワーク優先（最新HTML取得）
+  // オフライン時のみキャッシュにフォールバック
   if (request.mode === "navigate") {
     event.respondWith(
-      caches.match("/").then((cached) => cached || fetch(request))
+      fetch(request)
+        .then((res) => {
+          // 成功時はキャッシュを更新しておく（オフライン対策）
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return res;
+        })
+        .catch(() => {
+          console.log("[SW] Offline, serving cached page");
+          return caches.match("/").then((cached) => cached || caches.match(request));
+        })
     );
     return;
   }

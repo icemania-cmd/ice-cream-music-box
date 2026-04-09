@@ -37,6 +37,12 @@ export function useAudioEngine(initialTracks: Track[]) {
   repeatRef.current       = repeat;
   tracksRef.current       = tracks;
 
+  // isPlaying をグローバルに同期（SW更新時の自動リロード判定用）
+  useEffect(() => {
+    (window as typeof window & { __icmb_isPlaying?: boolean }).__icmb_isPlaying = isPlaying;
+    window.dispatchEvent(new CustomEvent("icmb-playstate", { detail: { isPlaying } }));
+  }, [isPlaying]);
+
   /**
    * ユーザーの「再生したい」意図を追跡するref
    * true  = ユーザーはpause状態を望んでいる（初期値）
