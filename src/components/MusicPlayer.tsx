@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { Track } from "@/lib/tracks";
 import { useAudioEngine } from "@/hooks/useAudioEngine";
+import { useMediaSession } from "@/hooks/useMediaSession";
 import VinylRecord from "./VinylRecord";
 import RetroPlaylist from "./RetroPlaylist";
 import RetroRankings from "./RetroRankings";
@@ -76,6 +77,12 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
 
   const elapsed = progress * duration;
   const isMuted = volume === 0;
+
+  // ロック画面・通知バーに再生コントロールを表示
+  useMediaSession({
+    track, isPlaying, duration, progress,
+    onPlay: play, onPause: pause, onNext: next, onPrev: prev, onSeek: seek,
+  });
 
   const handleReload = useCallback(async () => {
     setReloading(true);
