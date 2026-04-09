@@ -10,6 +10,7 @@ import NowPlayingModal from "./NowPlayingModal";
 import Visualizer from "./Visualizer";
 import ShareButtons from "./ShareButtons";
 import InstallBanner from "./InstallBanner";
+import LiveListeners from "./LiveListeners";
 import {
   IconPlay, IconPause, IconNext, IconPrev,
   IconShuffle, IconRepeat, IconRepeatOne,
@@ -211,6 +212,9 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
               </button>
             </div>
           </div>
+
+          {/* ─── リアルタイムリスナー数 ─── */}
+          <LiveListeners />
 
           {/* ─── 本体 2カラム ─── */}
           <div className="flex flex-col md:flex-row flex-1">
