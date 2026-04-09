@@ -103,7 +103,7 @@ export async function loadTracksServer(): Promise<Track[]> {
     // 本番環境: R2の公開URLからトラックリストを取得
     try {
       const res = await fetch(`${r2Base}/tracks.json`, {
-        next: { revalidate: 300 }, // 5分キャッシュ
+        cache: "no-store", // 常に最新のトラック順を取得（PINNED_TRACKS対応）
       });
       if (!res.ok) {
         console.error("R2 tracks.json fetch failed:", res.status);
