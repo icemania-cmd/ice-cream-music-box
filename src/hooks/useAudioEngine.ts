@@ -103,12 +103,41 @@ export function useAudioEngine(initialTracks: Track[]) {
     }
   }, []);
 
+  /**
+   * iOS / Android でバックグラウンド（画面ロック・アプリ切替）から復帰した際に
+   * AudioContext と audio 要素を再開する
+   */
+  const resumeOnForeground = useCallback(() => {
+    resumeCtx();
+    const audio = audioRef.current;
+    // AudioContextの停止に引っ張られてaudio自体が止まっていたら再開
+    if (audio && !wantsPausedRef.current && audio.paused) {
+      const p = audio.play();
+      if (p) {
+        pendingPlayRef.current = p;
+        p.then(() => {
+          pendingPlayRef.current = null;
+          if (!wantsPausedRef.current) setIsPlaying(true);
+          else audio.pause();
+        }).catch(() => { pendingPlayRef.current = null; });
+      }
+    }
+  }, [resumeCtx]);
+
   // ──────────────────────────────────────────
   // AnalyserNode 遅延初期化
   // ──────────────────────────────────────────
   const ensureAnalyser = useCallback(() => {
     const audio = audioRef.current;
     if (!audio || sourceConnectedRef.current) return;
+
+    // iOS Safari: Web Audio API を使うと画面ロック時に音声が止まる
+    // iOSではAudioContextをスキップしてHTML5 audioで直接再生
+    const isIOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (isIOS) return;
+
     try {
       type WinWithWebkit = typeof window & { webkitAudioContext?: typeof AudioContext };
       const AC = window.AudioContext || (window as WinWithWebkit).webkitAudioContext;
@@ -197,9 +226,16 @@ export function useAudioEngine(initialTracks: Track[]) {
     // スクロール・タッチ・画面復帰時にAudioContextを再開する
     // モバイルブラウザはスクロール中にAudioContextを自動停止することがある
     // ─────────────────────────────────────────────────────
+    // playsInline: iOS Safariでバックグラウンド再生を許可
+    audio.setAttribute("playsinline", "true");
+    audio.setAttribute("x-webkit-airplay", "allow");
+
     const handleResume = () => resumeCtx();
     const handleVisibility = () => {
-      if (document.visibilityState === "visible") resumeCtx();
+      if (document.visibilityState === "visible") {
+        // フォアグラウンド復帰時: AudioContext + audio を再開
+        resumeOnForeground();
+      }
     };
 
     document.addEventListener("scroll",           handleResume,     { passive: true });

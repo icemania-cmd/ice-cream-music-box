@@ -14,18 +14,19 @@ export default function RetroPlaylist({
   tracks, currentIndex, isPlaying, playCounts, onSelect,
 }: Props) {
   return (
-    <div className="overflow-y-auto" style={{ maxHeight: 380 }}>
+    <div className="playlist-scroll">
       {tracks.map((t, idx) => {
         const isCurrent = idx === currentIndex;
+        const playCount = playCounts[t.id] ?? t.plays;
         return (
           <button
             key={t.id}
             onClick={() => onSelect(idx)}
-            className="w-full text-left flex items-center gap-3 px-4 py-2.5 transition-colors"
+            className="w-full text-left flex items-center gap-3 px-4 py-2.5 transition-colors retro-list-item"
             style={{
               background: isCurrent ? "#FFF8F0" : "transparent",
               borderLeft: isCurrent ? "3px solid #C8860A" : "3px solid transparent",
-              borderBottom: "1px solid #F0E8DC",
+              cursor: "pointer",
             }}
           >
             {/* 番号 */}
@@ -76,6 +77,22 @@ export default function RetroPlaylist({
                 {t.genre}
               </p>
             </div>
+
+            {/* 再生回数 */}
+            <span
+              className="flex-shrink-0 tabular-nums"
+              style={{
+                fontSize: 10,
+                color: isCurrent ? "#B8800A" : "#C4A882",
+                fontFamily: "'Shippori Mincho', serif",
+                minWidth: 32,
+                textAlign: "right",
+              }}
+            >
+              {playCount >= 1000
+                ? `${(playCount / 1000).toFixed(1)}k`
+                : playCount > 0 ? String(playCount) : ""}
+            </span>
 
           </button>
         );

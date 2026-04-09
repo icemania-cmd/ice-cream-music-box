@@ -21,7 +21,7 @@ export default function RetroRankings({
   const medals = ["🥇", "🥈", "🥉"];
 
   return (
-    <div className="overflow-y-auto" style={{ maxHeight: 380 }}>
+    <div className="playlist-scroll">
       {ranked.map((t, rank) => {
         const plays = playCounts[t.id] ?? t.plays;
         const barWidth = (plays / maxPlays) * 100;

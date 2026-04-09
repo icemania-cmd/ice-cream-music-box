@@ -264,6 +264,54 @@ input[type="range"]::-moz-range-thumb {
 .eq-bar3 { animation: bar3 0.9s ease-in-out infinite; }
 
 /* ============================================
+   プレイリスト スクロール（レスポンシブ高さ）
+   ============================================ */
+.playlist-scroll {
+  overflow-y: auto;
+  min-height: 120px;
+}
+
+@media (min-width: 768px) {
+  .playlist-scroll {
+    /* PCではビューポート高さからヘッダー等を引いた残り全部を使う */
+    max-height: calc(100dvh - 230px);
+  }
+}
+
+/* ============================================
+   曲名マーキー（長い曲名を横スクロール表示）
+   ============================================ */
+@keyframes marquee-loop {
+  0%         { transform: translateX(0); }
+  10%        { transform: translateX(0); }        /* 冒頭で一時停止 */
+  80%        { transform: translateX(-50%); }      /* スライド */
+  90%, 100%  { transform: translateX(-50%); }     /* 末尾で一時停止 */
+}
+
+/* seamless版: 0→-50%で一周ループ */
+@keyframes marquee-seamless {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.marquee-text {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee-seamless 14s linear infinite;
+  animation-play-state: running;
+}
+
+.marquee-text:hover {
+  animation-play-state: paused;
+}
+
+/* ============================================
    NOW PLAYING グロウアニメーション
    ============================================ */
 @keyframes now-playing-glow {

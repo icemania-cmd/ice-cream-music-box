@@ -31,9 +31,11 @@ function colorFromFilename(filename: string): string {
 function titleFromFilename(filename: string): string {
   return filename
     .replace(/\.wav$/i, "")
-    .replace(/\s*\([Vv]\d+(\.\d+)?\)/g, "")        // (V5), (v4.5) 等
-    .replace(/\s*\(Remastered[^)]*\)/gi, "")         // (Remastered_v4.5) 等
-    .replace(/\s*_v\d+(\.\d+)?$/gi, "")              // _v5 末尾
+    .replace(/\s*\([Vv]\d+(\.\d+)?\)/g, "")         // (V5), (v4.5) 等
+    .replace(/\s*\(Remastered[^)]*\)/gi, "")          // (Remastered_v4.5) 等
+    .replace(/\s*\(Re-Recording[^)]*\)/gi, "")        // (Re-Recording_v4) 等
+    .replace(/\s*\(Re-?[Rr]ecording[^)]*\)/gi, "")   // バリエーション
+    .replace(/\s*_v\d+(\.\d+)?$/gi, "")               // _v5 末尾
     .trim();
 }
 

@@ -24,6 +24,24 @@ type Tab = "playlist" | "ranking";
 /** "AI-SONG" を表示用に変換 */
 const displayArtist = (a: string) => a === "AI-SONG" ? "ICECREAM SONG" : a;
 
+/**
+ * 長い曲名を横スクロール（マーキー）で表示するコンポーネント
+ * 短い曲名はそのまま中央揃えで表示
+ */
+function MarqueeTitle({ title, style }: { title: string; style: React.CSSProperties }) {
+  const isLong = title.length > 14;
+  if (!isLong) {
+    return <p style={{ ...style, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</p>;
+  }
+  // タイトルを2回繰り返してシームレスループ
+  const repeated = `${title}\u3000\u3000\u3000\u3000${title}\u3000\u3000\u3000\u3000`;
+  return (
+    <div className="marquee-container" style={{ textAlign: "left" }}>
+      <span className="marquee-text" style={style}>{repeated}</span>
+    </div>
+  );
+}
+
 // トーンアーム
 function ToneArm({ isPlaying }: { isPlaying: boolean }) {
   return (
@@ -274,14 +292,15 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
 
               {/* 曲情報 */}
               <div className="text-center w-full">
-                <p style={{
-                  color: "#3D2B1A", fontSize: 15, fontWeight: 700,
-                  fontFamily: "'Shippori Mincho', serif", letterSpacing: "0.04em",
-                  lineHeight: 1.4, marginBottom: 2,
-                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                }}>
-                  {track.title}
-                </p>
+                <MarqueeTitle
+                  title={track.title}
+                  style={{
+                    color: "#3D2B1A", fontSize: 15, fontWeight: 700,
+                    fontFamily: "'Shippori Mincho', serif", letterSpacing: "0.04em",
+                    lineHeight: 1.4, marginBottom: 2,
+                    display: "block",
+                  }}
+                />
                 <p style={{ color: "#8B6A4A", fontSize: 11, letterSpacing: "0.14em" }}>
                   {displayArtist(track.artist)}
                 </p>

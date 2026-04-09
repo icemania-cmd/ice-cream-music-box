@@ -31,6 +31,12 @@ const EXCLUDED_FILES = [
   "一日くらい大丈夫(Remastered_v5.5).wav",
 ];
 
+// プレイリスト先頭に固定表示するファイル名（順番通りに先頭へ）
+const PINNED_TRACKS = [
+  "一日くらい大丈夫（V5）.wav",   // 1曲目
+  "Scoop Me Up.wav",              // 2曲目
+];
+
 // ──────────────────────────────────────────────
 // R2クライアント
 // ──────────────────────────────────────────────
@@ -79,6 +85,8 @@ function titleFromFilename(filename) {
     .replace(/\.wav$/i, "")
     .replace(/\s*\([Vv]\d+(\.\d+)?\)/g, "")
     .replace(/\s*\(Remastered[^)]*\)/gi, "")
+    .replace(/\s*\(Re-Recording[^)]*\)/gi, "")       // (Re-Recording_v4) 等
+    .replace(/\s*\(Re-?[Rr]ecording[^)]*\)/gi, "")   // バリエーション
     .replace(/\s*_v\d+(\.\d+)?$/gi, "")
     .trim();
 }
@@ -138,7 +146,16 @@ async function main() {
   if (EXCLUDED_FILES.length > 0) {
     console.log(`🚫 除外ファイル: ${EXCLUDED_FILES.join(", ")}\n`);
   }
-  console.log(`📂 WAVファイル: ${wavFiles.length}件\n`);
+
+  // PINNED_TRACKSを先頭に、残りをアルファベット順でソート
+  const pinned = PINNED_TRACKS.filter(f => wavFiles.includes(f));
+  const rest = wavFiles.filter(f => !PINNED_TRACKS.includes(f));
+  const sortedFiles = [...pinned, ...rest];
+
+  if (pinned.length > 0) {
+    console.log(`📌 固定曲: ${pinned.join(", ")}\n`);
+  }
+  console.log(`📂 WAVファイル: ${sortedFiles.length}件\n`);
 
   // 2. tracks-meta.json 読み込み
   let meta = {};
@@ -153,7 +170,7 @@ async function main() {
   }
 
   // 3. Track[] を構築
-  const tracks = wavFiles.map((filename, idx) => {
+  const tracks = sortedFiles.map((filename, idx) => {
     const m = meta[filename] ?? {};
     return {
       id: idx + 1,
@@ -171,7 +188,7 @@ async function main() {
   let uploaded = 0;
   let skipped = 0;
 
-  const uploadTasks = wavFiles.map((filename) => async () => {
+  const uploadTasks = sortedFiles.map((filename) => async () => {
     const key = `audio/${filename}`;
     const filePath = path.join(AUDIO_DIR, filename);
     const stat = fs.statSync(filePath);
