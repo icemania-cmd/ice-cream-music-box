@@ -1,5 +1,5 @@
 // ICE CREAM MUSIC BOX — Service Worker
-const CACHE_NAME = "icmb-v1";
+const CACHE_NAME = "icmb-v2";
 
 // キャッシュするファイル（アプリシェル）
 const PRECACHE = [
