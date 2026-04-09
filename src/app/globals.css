@@ -1,26 +1,264 @@
 @import "tailwindcss";
 
+/* ============================================
+   昭和レトロ × アイスクリーム カラーシステム
+   ============================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Wood / Cabinet */
+  --wood-dark:   #120805;
+  --wood-mid:    #2A1208;
+  --wood-panel:  #1E0E06;
+  --wood-light:  #4A2010;
+  --wood-edge:   #6B3218;
+
+  /* Gold / Brass */
+  --gold:        #C8860A;
+  --gold-light:  #E6A820;
+  --gold-pale:   #F0C84A;
+  --brass:       #9A6B10;
+  --brass-dark:  #6B4A08;
+
+  /* Cream / Text */
+  --cream:       #F5E6C8;
+  --cream-muted: #C8AA84;
+  --cream-dark:  #8B7355;
+  --sepia:       #7A5C3C;
+
+  /* Ice Cream Accents */
+  --ice-pink:    #D65076;
+  --ice-pink-light: #E87898;
+  --ice-mint:    #5DB89A;
+  --ice-cream:   #FFF8F0;
+  --ice-choco:   #5C3A2E;
+
+  /* Vinyl */
+  --vinyl-black: #080808;
+  --vinyl-groove:#141414;
+  --vinyl-shine: #1E1E1E;
+
+  /* Meter */
+  --meter-orange: #FF8C00;
+  --meter-red:    #E63030;
+  --meter-green:  #5DB89A;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+* { box-sizing: border-box; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--wood-dark);
+  color: var(--cream);
+  margin: 0;
+  padding: 0;
+  font-family: 'M PLUS Rounded 1c', 'Noto Serif JP', sans-serif;
 }
+
+/* ============================================
+   木目テクスチャ
+   ============================================ */
+.wood-texture {
+  background-color: var(--wood-mid);
+  background-image:
+    repeating-linear-gradient(
+      87deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(0,0,0,0.06) 3px,
+      rgba(0,0,0,0.06) 4px
+    ),
+    repeating-linear-gradient(
+      93deg,
+      transparent 0px,
+      transparent 8px,
+      rgba(255,255,255,0.02) 8px,
+      rgba(255,255,255,0.02) 10px
+    );
+}
+
+.wood-dark {
+  background-color: var(--wood-dark);
+  background-image:
+    repeating-linear-gradient(
+      88deg,
+      transparent 0px,
+      transparent 4px,
+      rgba(0,0,0,0.08) 4px,
+      rgba(0,0,0,0.08) 5px
+    );
+}
+
+/* ============================================
+   スピーカーメッシュ
+   ============================================ */
+.speaker-mesh {
+  background-color: #0A0503;
+  background-image: radial-gradient(circle, #1A0A05 1.5px, transparent 1.5px);
+  background-size: 7px 7px;
+  border: 2px solid var(--brass-dark);
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* ============================================
+   ゴールドボーダー
+   ============================================ */
+.gold-border {
+  border: 1px solid var(--brass);
+  box-shadow:
+    0 0 0 1px rgba(200,134,10,0.2),
+    inset 0 1px 0 rgba(230,168,32,0.3),
+    inset 0 -1px 0 rgba(0,0,0,0.4);
+}
+
+/* ============================================
+   ビニールレコードアニメーション
+   ============================================ */
+@keyframes vinyl-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.vinyl-spinning {
+  animation: vinyl-spin 2.5s linear infinite;
+  animation-play-state: paused;
+}
+
+.vinyl-spinning.playing {
+  animation-play-state: running;
+}
+
+/* ============================================
+   針の揺れ
+   ============================================ */
+@keyframes needle-playing {
+  0%, 100% { transform: rotate(-20deg); }
+  50%       { transform: rotate(-15deg); }
+}
+
+@keyframes needle-idle {
+  to { transform: rotate(-35deg); }
+}
+
+.needle-arm {
+  transform-origin: 10% 10%;
+  transition: transform 0.6s ease;
+}
+
+.needle-arm.playing {
+  animation: needle-playing 3s ease-in-out infinite;
+}
+
+/* ============================================
+   レトロ シークバー
+   ============================================ */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  background: var(--wood-light);
+  border: 1px solid var(--brass-dark);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--gold-pale), var(--gold));
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.6), 0 0 0 1px var(--brass);
+  transition: transform 0.15s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--brass);
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+}
+
+/* ============================================
+   スクロールバー
+   ============================================ */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--wood-dark); }
+::-webkit-scrollbar-thumb {
+  background: var(--brass-dark);
+  border-radius: 3px;
+}
+
+/* ============================================
+   メーター針アニメーション（VUメーター風）
+   ============================================ */
+@keyframes vu-meter {
+  0%   { transform: rotate(-40deg); }
+  25%  { transform: rotate(10deg); }
+  50%  { transform: rotate(-20deg); }
+  75%  { transform: rotate(20deg); }
+  100% { transform: rotate(-40deg); }
+}
+
+.vu-needle {
+  transform-origin: 50% 90%;
+  animation: vu-meter 1.8s ease-in-out infinite;
+  animation-play-state: paused;
+}
+
+.vu-needle.active {
+  animation-play-state: running;
+}
+
+/* ============================================
+   フォントユーティリティ
+   ============================================ */
+.font-retro-jp {
+  font-family: 'Shippori Mincho', 'Noto Serif JP', serif;
+}
+
+.font-display {
+  font-family: 'Shippori Mincho', serif;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================
+   リストアイテム ホバー
+   ============================================ */
+.retro-list-item {
+  border-bottom: 1px solid rgba(107, 50, 24, 0.4);
+  transition: background 0.15s;
+}
+
+.retro-list-item:hover {
+  background: rgba(200, 134, 10, 0.08);
+}
+
+/* ============================================
+   NowPlaying オーバーレイ
+   ============================================ */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.now-playing-enter {
+  animation: fadeInUp 0.35s ease forwards;
+}
+
+/* ============================================
+   Playing indicator bars
+   ============================================ */
+@keyframes bar1 { 0%,100%{height:6px} 50%{height:18px} }
+@keyframes bar2 { 0%,100%{height:14px} 50%{height:6px} }
+@keyframes bar3 { 0%,100%{height:10px} 50%{height:20px} }
+
+.eq-bar1 { animation: bar1 0.8s ease-in-out infinite; }
+.eq-bar2 { animation: bar2 0.6s ease-in-out infinite; }
+.eq-bar3 { animation: bar3 0.9s ease-in-out infinite; }
