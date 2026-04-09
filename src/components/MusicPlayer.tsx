@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Track } from "@/lib/tracks";
 import { useAudioEngine } from "@/hooks/useAudioEngine";
 import { useMediaSession } from "@/hooks/useMediaSession";
@@ -17,7 +17,7 @@ import {
   IconShuffle, IconRepeat, IconRepeatOne,
   IconExpand, IconList, IconTrophy,
 } from "./FlatIcons";
-import { Volume1, Volume2, VolumeX, Zap } from "lucide-react";
+import { Volume1, Volume2, VolumeX, Zap, ChevronDown } from "lucide-react";
 
 type Tab = "playlist" | "ranking";
 
@@ -72,14 +72,15 @@ function ToneArm({ isPlaying }: { isPlaying: boolean }) {
 }
 
 // ──────────────────────────────────────────────────────────────
-// VolumeControl: おしゃれな大型ボリュームコントロール
+// VolumeControl: 折りたたみ式ボリュームコントロール（誤タッチ防止）
+// デフォルト非表示。アイコン/数値タップで展開。
 // ──────────────────────────────────────────────────────────────
 function VolumeControl({ volume, onChange }: { volume: number; onChange: (v: number) => void }) {
+  const [expanded, setExpanded] = useState(false);
   const isMuted = volume === 0;
   const isBoost = volume > 1;
-  const pct = volume / 2; // スライダー上の位置（0-1）
+  const pct = volume / 2;
 
-  // 音量アイコン: ミュート→Volume1→Volume2→ブースト(Zap)
   const VolumeIcon = () => {
     if (isMuted) return <VolumeX size={18} color="#8B6A4A" strokeWidth={1.8} />;
     if (isBoost)  return <Zap size={18} color="#D65076" strokeWidth={1.8} />;
@@ -87,15 +88,12 @@ function VolumeControl({ volume, onChange }: { volume: number; onChange: (v: num
     return <Volume1 size={18} color="#B8800A" strokeWidth={1.8} />;
   };
 
-  // つまみのスタイル
   const thumbBg = isBoost
     ? "radial-gradient(circle at 38% 35%, #F09BB8, #D65076 55%, #A83560)"
     : "radial-gradient(circle at 38% 35%, #F0C84A, #B8800A 55%, #8B5E00)";
   const thumbShadow = isBoost
     ? "0 2px 14px rgba(214,80,118,0.55), inset 0 1px 0 rgba(255,255,255,0.35)"
     : "0 2px 14px rgba(184,128,10,0.5), inset 0 1px 0 rgba(255,255,255,0.35)";
-
-  // つまみ位置: calc(pct * 100% + (14 - pct * 28)px) = 左端14px、右端calc(100%-14px)
   const thumbLeft = `calc(${pct * 100}% + ${14 - pct * 28}px)`;
 
   const presets = [
@@ -105,23 +103,34 @@ function VolumeControl({ volume, onChange }: { volume: number; onChange: (v: num
   ];
 
   return (
-    <div className="w-full flex flex-col" style={{ gap: 10 }}>
-      {/* ヘッダー行: アイコン＋VOLUME＋数値 */}
-      <div className="flex items-center justify-between w-full">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => onChange(isMuted ? 0.7 : 0)}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 2, display: "flex", alignItems: "center", borderRadius: 4 }}
-            title={isMuted ? "ミュート解除" : "ミュート"}
-          >
-            <VolumeIcon />
-          </button>
-          <span style={{
-            fontSize: 9, color: "#8B6A4A", letterSpacing: "0.2em",
-            fontFamily: "var(--font-mplus), sans-serif",
-          }}>VOLUME</span>
-        </div>
-        <div className="flex items-center gap-1.5">
+    <div className="w-full flex flex-col" style={{ gap: 0 }}>
+      {/* ヘッダー行（常に表示） */}
+      <div className="flex items-center w-full" style={{ gap: 6 }}>
+        {/* ミュートトグルボタン */}
+        <button
+          onClick={() => onChange(isMuted ? 0.7 : 0)}
+          style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 4px", display: "flex", alignItems: "center", borderRadius: 6, flexShrink: 0 }}
+          title={isMuted ? "ミュート解除" : "ミュート"}
+        >
+          <VolumeIcon />
+        </button>
+
+        <span style={{
+          fontSize: 9, color: "#8B6A4A", letterSpacing: "0.2em",
+          fontFamily: "var(--font-mplus), sans-serif", flexShrink: 0,
+        }}>VOLUME</span>
+
+        {/* 展開トグルボタン（数値＋シェブロン） */}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center transition-all active:opacity-70"
+          style={{
+            background: "none", border: "none", cursor: "pointer",
+            marginLeft: "auto", display: "flex", alignItems: "center", gap: 6,
+            padding: "6px 4px", borderRadius: 6,
+          }}
+          title={expanded ? "ボリューム設定を閉じる" : "ボリューム設定を開く"}
+        >
           {isBoost && (
             <span style={{
               fontSize: 8, padding: "1px 6px", borderRadius: 3,
@@ -131,130 +140,282 @@ function VolumeControl({ volume, onChange }: { volume: number; onChange: (v: num
             }}>BOOST</span>
           )}
           <span style={{
-            fontSize: 16, fontWeight: 700,
+            fontSize: 15, fontWeight: 700,
             color: isBoost ? "#D65076" : "#B8800A",
             fontVariantNumeric: "tabular-nums",
             fontFamily: "var(--font-mplus), sans-serif",
-            textShadow: isBoost ? "0 0 10px rgba(214,80,118,0.35)" : "none",
-            transition: "color 0.3s, text-shadow 0.3s",
-            minWidth: 48, textAlign: "right",
+            minWidth: 44, textAlign: "right",
           }}>
             {Math.round(volume * 100)}%
           </span>
-        </div>
+          <ChevronDown
+            size={14} color="#8B6A4A" strokeWidth={1.8}
+            style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.22s ease" }}
+          />
+        </button>
       </div>
 
-      {/* スライダー本体 */}
-      <div className="relative w-full" style={{ height: 48 }}>
-        {/* トラック背景（全体） */}
-        <div style={{
-          position: "absolute", left: 14, right: 14,
-          top: "50%", transform: "translateY(-50%)",
-          height: 8, borderRadius: 4,
-          background: "rgba(60,30,10,0.08)",
-          border: "1px solid rgba(60,30,10,0.05)",
-        }} />
-
-        {/* 通常ゾーンフィル (0→100%) */}
-        <div style={{
-          position: "absolute", left: 14,
-          top: "50%", transform: "translateY(-50%)",
-          height: 8,
-          width: `calc(${Math.min(volume, 1) * 50}% - ${Math.min(volume, 1) * 14}px)`,
-          background: "linear-gradient(90deg, #C8860A, #E6A820)",
-          borderRadius: "4px 0 0 4px",
-          pointerEvents: "none", zIndex: 1,
-          transition: "width 0.05s",
-        }} />
-
-        {/* ブーストゾーンフィル (100%→200%) */}
-        <div style={{
-          position: "absolute",
-          left: `calc(50% + 0px)`,
-          top: "50%", transform: "translateY(-50%)",
-          height: 8,
-          width: `calc(${Math.max(0, volume - 1) * 50}% - ${Math.max(0, volume - 1) * 14}px)`,
-          background: "linear-gradient(90deg, #E6A820, #D65076)",
-          pointerEvents: "none", zIndex: 1,
-          transition: "width 0.05s",
-        }} />
-
-        {/* 100%区切りライン */}
-        <div style={{
-          position: "absolute", left: "50%",
-          top: "50%", transform: "translate(-50%, -50%)",
-          width: 2, height: 20, borderRadius: 1,
-          background: isBoost ? "rgba(214,80,118,0.6)" : "rgba(139,106,74,0.25)",
-          zIndex: 2, transition: "background 0.3s",
-        }} />
-
-        {/* 100%ラベル */}
-        <div style={{
-          position: "absolute", left: "50%", bottom: 2,
-          transform: "translateX(-50%)",
-          fontSize: 8, color: "rgba(139,106,74,0.45)",
-          letterSpacing: "0.04em",
-          fontFamily: "var(--font-mplus), sans-serif",
-          pointerEvents: "none",
-        }}>100%</div>
-
-        {/* range input（透明・クリック受付） */}
-        <input
-          type="range" min={0} max={2} step={0.01} value={volume}
-          onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="volume-range-input"
-          style={{
-            position: "absolute", inset: 0,
-            width: "100%", height: "100%",
-            opacity: 0, cursor: "pointer", zIndex: 4, margin: 0,
-          }}
-        />
-
-        {/* カスタムつまみ */}
-        <div style={{
-          position: "absolute",
-          left: thumbLeft,
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 28, height: 28, borderRadius: "50%",
-          background: thumbBg,
-          boxShadow: thumbShadow,
-          border: "2.5px solid rgba(255,255,255,0.85)",
-          pointerEvents: "none", zIndex: 3,
-          transition: "background 0.3s, box-shadow 0.3s",
-        }} />
-      </div>
-
-      {/* プリセットボタン */}
-      <div className="flex gap-2 w-full">
-        {presets.map(({ label, value, active, boost }) => (
-          <button
-            key={label}
-            onClick={() => onChange(value)}
-            className="flex-1 transition-all active:scale-95"
-            style={{
-              padding: "7px 4px",
-              borderRadius: 8,
-              background: active
-                ? (boost ? "rgba(214,80,118,0.14)" : "rgba(184,128,10,0.14)")
-                : "rgba(60,30,10,0.04)",
-              border: active
-                ? `1.5px solid ${boost ? "rgba(214,80,118,0.5)" : "rgba(184,128,10,0.45)"}`
-                : "1.5px solid rgba(139,106,74,0.15)",
-              color: active
-                ? (boost ? "#D65076" : "#B8800A")
-                : "#8B6A4A",
-              fontSize: 10, fontWeight: active ? 700 : 400,
-              letterSpacing: "0.1em",
+      {/* 展開エリア（タップで開閉） */}
+      {expanded && (
+        <div style={{ paddingTop: 6, paddingBottom: 4 }}>
+          {/* スライダー本体 */}
+          <div className="relative w-full" style={{ height: 48 }}>
+            <div style={{
+              position: "absolute", left: 14, right: 14,
+              top: "50%", transform: "translateY(-50%)",
+              height: 8, borderRadius: 4,
+              background: "rgba(60,30,10,0.08)",
+              border: "1px solid rgba(60,30,10,0.05)",
+            }} />
+            <div style={{
+              position: "absolute", left: 14,
+              top: "50%", transform: "translateY(-50%)",
+              height: 8,
+              width: `calc(${Math.min(volume, 1) * 50}% - ${Math.min(volume, 1) * 14}px)`,
+              background: "linear-gradient(90deg, #C8860A, #E6A820)",
+              borderRadius: "4px 0 0 4px",
+              pointerEvents: "none", zIndex: 1,
+              transition: "width 0.05s",
+            }} />
+            <div style={{
+              position: "absolute",
+              left: "calc(50% + 0px)",
+              top: "50%", transform: "translateY(-50%)",
+              height: 8,
+              width: `calc(${Math.max(0, volume - 1) * 50}% - ${Math.max(0, volume - 1) * 14}px)`,
+              background: "linear-gradient(90deg, #E6A820, #D65076)",
+              pointerEvents: "none", zIndex: 1,
+              transition: "width 0.05s",
+            }} />
+            <div style={{
+              position: "absolute", left: "50%",
+              top: "50%", transform: "translate(-50%, -50%)",
+              width: 2, height: 20, borderRadius: 1,
+              background: isBoost ? "rgba(214,80,118,0.6)" : "rgba(139,106,74,0.25)",
+              zIndex: 2, transition: "background 0.3s",
+            }} />
+            <div style={{
+              position: "absolute", left: "50%", bottom: 2,
+              transform: "translateX(-50%)",
+              fontSize: 8, color: "rgba(139,106,74,0.45)",
+              letterSpacing: "0.04em",
               fontFamily: "var(--font-mplus), sans-serif",
+              pointerEvents: "none",
+            }}>100%</div>
+            {/* range input: touch-action: pan-y で縦スクロールは通過、横ドラッグのみ音量操作 */}
+            <input
+              type="range" min={0} max={2} step={0.01} value={volume}
+              onChange={(e) => onChange(parseFloat(e.target.value))}
+              className="volume-range-input"
+              style={{
+                position: "absolute", inset: 0,
+                width: "100%", height: "100%",
+                opacity: 0, cursor: "pointer", zIndex: 4, margin: 0,
+                touchAction: "pan-y",
+              }}
+            />
+            <div style={{
+              position: "absolute",
+              left: thumbLeft,
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 28, height: 28, borderRadius: "50%",
+              background: thumbBg,
+              boxShadow: thumbShadow,
+              border: "2.5px solid rgba(255,255,255,0.85)",
+              pointerEvents: "none", zIndex: 3,
+              transition: "background 0.3s, box-shadow 0.3s",
+            }} />
+          </div>
+
+          {/* プリセットボタン */}
+          <div className="flex gap-2 w-full" style={{ marginTop: 6 }}>
+            {presets.map(({ label, value, active, boost }) => (
+              <button
+                key={label}
+                onClick={() => onChange(value)}
+                className="flex-1 transition-all active:scale-95"
+                style={{
+                  padding: "7px 4px",
+                  borderRadius: 8,
+                  background: active
+                    ? (boost ? "rgba(214,80,118,0.14)" : "rgba(184,128,10,0.14)")
+                    : "rgba(60,30,10,0.04)",
+                  border: active
+                    ? `1.5px solid ${boost ? "rgba(214,80,118,0.5)" : "rgba(184,128,10,0.45)"}`
+                    : "1.5px solid rgba(139,106,74,0.15)",
+                  color: active
+                    ? (boost ? "#D65076" : "#B8800A")
+                    : "#8B6A4A",
+                  fontSize: 10, fontWeight: active ? 700 : 400,
+                  letterSpacing: "0.1em",
+                  fontFamily: "var(--font-mplus), sans-serif",
+                  cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 3,
+                }}
+              >
+                {boost && <Zap size={9} strokeWidth={2} />}
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// SeekBar: つまみドラッグのみでシーク（誤タッチ完全防止）
+// トラック部分はタッチ無効。つまみを掴んでドラッグした時のみシーク。
+// ──────────────────────────────────────────────────────────────
+function SeekBar({
+  progress, onSeek, elapsed, duration, onSeekRelative,
+}: {
+  progress: number;
+  onSeek: (r: number) => void;
+  elapsed: number;
+  duration: number;
+  onSeekRelative: (delta: number) => void;
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [localProgress, setLocalProgress] = useState(progress);
+
+  // ドラッグ中以外は外部progressに追従
+  useEffect(() => {
+    if (!isDragging) setLocalProgress(progress);
+  }, [progress, isDragging]);
+
+  const dp = isDragging ? localProgress : progress;
+
+  // トラック上のX座標からシーク比率を計算
+  const calcRatio = (clientX: number): number => {
+    const el = trackRef.current;
+    if (!el) return 0;
+    const rect = el.getBoundingClientRect();
+    const pad = 10; // つまみ半径分のパディング
+    return Math.max(0, Math.min(1, (clientX - rect.left - pad) / (rect.width - pad * 2)));
+  };
+
+  // つまみのPointerイベント（setPointerCaptureで範囲外ドラッグも追跡）
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    setLocalProgress(calcRatio(e.clientX));
+  };
+
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsDragging(false);
+    onSeek(calcRatio(e.clientX));
+  };
+
+  const onPointerCancel = () => {
+    isDraggingRef.current = false;
+    setIsDragging(false);
+  };
+
+  // つまみ左位置: dp=0 → left=0, dp=1 → left=100%-20px
+  const thumbLeft = `calc(${dp * 100}% - ${dp * 20}px)`;
+
+  return (
+    <div className="w-full flex flex-col gap-1.5">
+      {/* シークトラック */}
+      <div ref={trackRef} style={{ position: "relative", height: 28, display: "flex", alignItems: "center" }}>
+        {/* トラック背景（タッチ無効） */}
+        <div style={{
+          position: "absolute", left: 10, right: 10,
+          height: 2, borderRadius: 1,
+          background: "rgba(60,30,10,0.12)",
+          pointerEvents: "none",
+        }} />
+        {/* 進捗フィル（タッチ無効） */}
+        <div style={{
+          position: "absolute", left: 10,
+          height: 2, borderRadius: 1,
+          width: `calc(${dp * 100}% - ${dp * 20}px)`,
+          background: "linear-gradient(90deg, #B8800A, #D4A020)",
+          pointerEvents: "none",
+        }} />
+        {/* つまみ（唯一の操作エリア。touch-action: none でPointerイベントを確実に受信） */}
+        <div
+          style={{
+            position: "absolute",
+            left: thumbLeft,
+            top: "50%",
+            transform: `translateY(-50%) scale(${isDragging ? 1.25 : 1})`,
+            width: 20, height: 20, borderRadius: "50%",
+            background: isDragging
+              ? "radial-gradient(circle at 35% 35%, #FFD66A, #D4A020)"
+              : "radial-gradient(circle at 35% 35%, #F0C84A, #B8800A)",
+            boxShadow: isDragging
+              ? "0 0 0 7px rgba(184,128,10,0.14), 0 2px 8px rgba(100,60,10,0.45)"
+              : "0 1px 6px rgba(100,60,10,0.35)",
+            cursor: isDragging ? "grabbing" : "grab",
+            touchAction: "none",
+            zIndex: 3,
+            transition: isDragging ? "none" : "transform 0.15s, box-shadow 0.15s",
+          }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerCancel}
+        />
+      </div>
+
+      {/* 時間表示 + ±15秒ボタン */}
+      <div className="flex items-center justify-between">
+        <span style={{ fontSize: 10, color: "#8B6A4A", fontVariantNumeric: "tabular-nums" as const, minWidth: 30 }}>
+          {fmt(elapsed)}
+        </span>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => onSeekRelative(-15)}
+            title="-15秒"
+            className="flex items-center gap-0.5 transition-all active:scale-90"
+            style={{
+              padding: "3px 8px", borderRadius: 4,
+              background: "rgba(61,43,26,0.06)",
+              border: "1px solid rgba(139,106,74,0.25)",
+              color: "#8B6A4A", fontSize: 9, letterSpacing: "0.04em",
               cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 3,
             }}
           >
-            {boost && <Zap size={9} strokeWidth={2} />}
-            {label}
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" style={{ marginRight: 1 }}>
+              <path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="#8B6A4A"/>
+            </svg>
+            15
           </button>
-        ))}
+          <button
+            onClick={() => onSeekRelative(15)}
+            title="+15秒"
+            className="flex items-center gap-0.5 transition-all active:scale-90"
+            style={{
+              padding: "3px 8px", borderRadius: 4,
+              background: "rgba(61,43,26,0.06)",
+              border: "1px solid rgba(139,106,74,0.25)",
+              color: "#8B6A4A", fontSize: 9, letterSpacing: "0.04em",
+              cursor: "pointer",
+            }}
+          >
+            15
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" style={{ marginLeft: 1 }}>
+              <path d="M12 5V2l4 4-4 4V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z" fill="#8B6A4A"/>
+            </svg>
+          </button>
+        </div>
+        <span style={{ fontSize: 10, color: "#8B6A4A", fontVariantNumeric: "tabular-nums" as const, minWidth: 30, textAlign: "right" }}>
+          {fmt(duration)}
+        </span>
       </div>
     </div>
   );
@@ -501,71 +662,14 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                 </span>
               </div>
 
-              {/* ── シークバー ── */}
-              <div className="w-full flex flex-col gap-1">
-                <div className="relative flex items-center" style={{ height: 24 }}>
-                  <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-full"
-                    style={{ height: 4, background: "rgba(60,30,10,0.12)" }} />
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 rounded-full pointer-events-none"
-                    style={{
-                      height: 4, width: `${progress * 100}%`,
-                      background: "linear-gradient(90deg, #B8800A, #D4A020)", zIndex: 1,
-                    }} />
-                  <input type="range" min={0} max={1} step={0.001} value={progress}
-                    onChange={(e) => seek(parseFloat(e.target.value))}
-                    className="w-full absolute inset-0 opacity-0 cursor-pointer" style={{ zIndex: 2 }} />
-                  <div className="absolute top-1/2 -translate-y-1/2 pointer-events-none"
-                    style={{
-                      left: `calc(${progress * 100}% - 8px)`,
-                      width: 16, height: 16, borderRadius: "50%",
-                      background: "radial-gradient(circle at 35% 35%, #F0C84A, #B8800A)",
-                      boxShadow: "0 1px 6px rgba(100,60,10,0.4)", zIndex: 3,
-                    }} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span style={{ fontSize: 10, color: "#8B6A4A", fontVariantNumeric: "tabular-nums" as const, minWidth: 30 }}>{fmt(elapsed)}</span>
-
-                  {/* ±15秒送りボタン */}
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => seekRelative(-15)}
-                      title="-15秒"
-                      className="flex items-center gap-0.5 transition-all active:scale-90"
-                      style={{
-                        padding: "2px 7px", borderRadius: 4,
-                        background: "rgba(61,43,26,0.06)",
-                        border: "1px solid rgba(139,106,74,0.25)",
-                        color: "#8B6A4A", fontSize: 9, letterSpacing: "0.04em",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" style={{ marginRight: 1 }}>
-                        <path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="#8B6A4A"/>
-                      </svg>
-                      15
-                    </button>
-                    <button
-                      onClick={() => seekRelative(15)}
-                      title="+15秒"
-                      className="flex items-center gap-0.5 transition-all active:scale-90"
-                      style={{
-                        padding: "2px 7px", borderRadius: 4,
-                        background: "rgba(61,43,26,0.06)",
-                        border: "1px solid rgba(139,106,74,0.25)",
-                        color: "#8B6A4A", fontSize: 9, letterSpacing: "0.04em",
-                        cursor: "pointer",
-                      }}
-                    >
-                      15
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" style={{ marginLeft: 1 }}>
-                        <path d="M12 5V2l4 4-4 4V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z" fill="#8B6A4A"/>
-                      </svg>
-                    </button>
-                  </div>
-
-                  <span style={{ fontSize: 10, color: "#8B6A4A", fontVariantNumeric: "tabular-nums" as const, minWidth: 30, textAlign: "right" }}>{fmt(duration)}</span>
-                </div>
-              </div>
+              {/* ── シークバー（つまみドラッグ専用・誤タッチ防止） ── */}
+              <SeekBar
+                progress={progress}
+                onSeek={seek}
+                elapsed={elapsed}
+                duration={duration}
+                onSeekRelative={seekRelative}
+              />
 
               {/* ── メインコントロール ── */}
               <div className="flex items-center justify-center gap-3 w-full">
