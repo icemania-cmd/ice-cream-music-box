@@ -43,15 +43,11 @@ function CheckIcon({ size = 16, color = "currentColor" }: { size?: number; color
   );
 }
 
-// ── シェアテキスト生成 ────────────────────────────────
-function buildShareText(track: Track): string {
-  return `🍦 いま「${track.title}」を聴いています！\n#あいぱく #アイスクリーム`;
-}
-
 export default function ShareButtons({ track }: Props) {
   const [copied, setCopied] = useState(false);
 
-  const text = buildShareText(track);
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "https://ice-cream-music-box.vercel.app";
+  const text = `🍦 いま「${track.title}」を聴いています！\n#あいぱく #アイスクリーム\n${shareUrl}`;
 
   // X (Twitter) シェア
   const shareX = () => {
@@ -89,10 +85,11 @@ export default function ShareButtons({ track }: Props) {
       {/* ラベル */}
       <p style={{
         fontSize: 9,
-        color: "rgba(245,230,200,0.35)",
+        color: "#8B6A4A",
         letterSpacing: "0.2em",
         textAlign: "center",
         fontFamily: "'Shippori Mincho', serif",
+        opacity: 0.7,
       }}>
         ― SHARE ―
       </p>
@@ -104,21 +101,22 @@ export default function ShareButtons({ track }: Props) {
         <button
           onClick={shareX}
           title="Xでシェア"
-          className="flex items-center gap-1.5 transition-all hover:brightness-110 active:scale-95"
+          className="flex items-center gap-1.5 transition-all hover:brightness-95 active:scale-95"
           style={{
             flex: 1,
             maxWidth: 90,
             padding: "7px 0",
-            background: "rgba(0,0,0,0.4)",
-            border: "1px solid rgba(255,255,255,0.14)",
+            background: "#FFF9F0",
+            border: "1.5px solid #3D2B1A",
             borderRadius: 6,
-            color: "#F5E6C8",
+            color: "#3D2B1A",
             fontSize: 10,
             letterSpacing: "0.08em",
             justifyContent: "center",
+            boxShadow: "0 1px 4px rgba(61,43,26,0.1)",
           }}
         >
-          <XIcon size={14} color="#F5E6C8" />
+          <XIcon size={14} color="#3D2B1A" />
           <span>ポスト</span>
         </button>
 
@@ -126,21 +124,22 @@ export default function ShareButtons({ track }: Props) {
         <button
           onClick={shareLine}
           title="LINEでシェア"
-          className="flex items-center gap-1.5 transition-all hover:brightness-110 active:scale-95"
+          className="flex items-center gap-1.5 transition-all hover:brightness-95 active:scale-95"
           style={{
             flex: 1,
             maxWidth: 90,
             padding: "7px 0",
-            background: "rgba(6,199,85,0.12)",
-            border: "1px solid rgba(6,199,85,0.3)",
+            background: "#06C755",
+            border: "1.5px solid #05A847",
             borderRadius: 6,
-            color: "#4AE080",
+            color: "#FFFFFF",
             fontSize: 10,
             letterSpacing: "0.08em",
             justifyContent: "center",
+            boxShadow: "0 1px 4px rgba(6,199,85,0.25)",
           }}
         >
-          <LineIcon size={14} color="#4AE080" />
+          <LineIcon size={14} color="#FFFFFF" />
           <span>LINE</span>
         </button>
 
@@ -148,24 +147,25 @@ export default function ShareButtons({ track }: Props) {
         <button
           onClick={copyToClipboard}
           title="テキストをコピー"
-          className="flex items-center gap-1.5 transition-all hover:brightness-110 active:scale-95"
+          className="flex items-center gap-1.5 transition-all hover:brightness-95 active:scale-95"
           style={{
             flex: 1,
             maxWidth: 90,
             padding: "7px 0",
-            background: copied ? "rgba(93,184,154,0.15)" : "rgba(255,255,255,0.05)",
-            border: `1px solid ${copied ? "rgba(93,184,154,0.4)" : "rgba(255,255,255,0.1)"}`,
+            background: copied ? "rgba(107,175,150,0.12)" : "#FFF9F0",
+            border: `1.5px solid ${copied ? "#6BAF96" : "#3D2B1A"}`,
             borderRadius: 6,
-            color: copied ? "#5DB89A" : "rgba(245,230,200,0.5)",
+            color: copied ? "#4A9E80" : "#3D2B1A",
             fontSize: 10,
             letterSpacing: "0.08em",
             justifyContent: "center",
             transition: "all 0.2s",
+            boxShadow: "0 1px 4px rgba(61,43,26,0.1)",
           }}
         >
           {copied
-            ? <><CheckIcon size={13} color="#5DB89A" /><span>コピー済</span></>
-            : <><CopyIcon size={13} color="rgba(245,230,200,0.5)" /><span>コピー</span></>
+            ? <><CheckIcon size={13} color="#4A9E80" /><span>コピー済</span></>
+            : <><CopyIcon size={13} color="#3D2B1A" /><span>コピー</span></>
           }
         </button>
       </div>
@@ -173,11 +173,11 @@ export default function ShareButtons({ track }: Props) {
       {/* シェアプレビュー */}
       <div style={{
         padding: "6px 10px",
-        background: "rgba(0,0,0,0.25)",
-        border: "1px solid rgba(255,255,255,0.06)",
+        background: "rgba(255,243,224,0.7)",
+        border: "1px solid #E8D5B0",
         borderRadius: 4,
         fontSize: 9,
-        color: "rgba(245,230,200,0.4)",
+        color: "#8B6A4A",
         lineHeight: 1.6,
         letterSpacing: "0.04em",
         whiteSpace: "pre-line",

@@ -11,9 +11,42 @@ export async function GET(
 ) {
   const { filename } = await params;
   const decoded = decodeURIComponent(filename);
+
+  // 本番環境（R2）: R2からプロキシして同一オリジンで返す
+  const r2Base = process.env.NEXT_PUBLIC_R2_URL;
+  if (r2Base) {
+    const r2Url = `${r2Base}/audio/${encodeURIComponent(decoded)}`;
+    const rangeHeader = req.headers.get("range");
+
+    const fetchHeaders: Record<string, string> = {};
+    if (rangeHeader) fetchHeaders["Range"] = rangeHeader;
+
+    try {
+      const r2Res = await fetch(r2Url, { headers: fetchHeaders });
+      const resHeaders: Record<string, string> = {
+        "Content-Type": "audio/wav",
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "public, max-age=3600",
+        "Access-Control-Allow-Origin": "*",
+      };
+      const contentLength = r2Res.headers.get("content-length");
+      const contentRange = r2Res.headers.get("content-range");
+      if (contentLength) resHeaders["Content-Length"] = contentLength;
+      if (contentRange) resHeaders["Content-Range"] = contentRange;
+
+      return new NextResponse(r2Res.body, {
+        status: r2Res.status,
+        headers: resHeaders,
+      });
+    } catch {
+      return new NextResponse("Failed to fetch from R2", { status: 502 });
+    }
+  }
+
+  // 開発環境: ローカルファイルシステムから直接ストリーム
   const filePath = path.join(AUDIO_DIR, decoded);
 
-  // Prevent path traversal
+  // パストラバーサル対策
   if (!filePath.startsWith(AUDIO_DIR)) {
     return new NextResponse("Forbidden", { status: 403 });
   }
@@ -30,6 +63,7 @@ export async function GET(
     "Content-Type": "audio/wav",
     "Accept-Ranges": "bytes",
     "Cache-Control": "public, max-age=3600",
+    "Access-Control-Allow-Origin": "*",
   };
 
   if (rangeHeader) {

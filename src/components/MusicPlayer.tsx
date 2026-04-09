@@ -4,13 +4,17 @@ import { useState, useCallback } from "react";
 import { Track } from "@/lib/tracks";
 import { useAudioEngine } from "@/hooks/useAudioEngine";
 import VinylRecord from "./VinylRecord";
-import RetroControls from "./RetroControls";
 import RetroPlaylist from "./RetroPlaylist";
 import RetroRankings from "./RetroRankings";
 import NowPlayingModal from "./NowPlayingModal";
 import Visualizer from "./Visualizer";
-import { IconExpand, IconList, IconTrophy } from "./FlatIcons";
 import ShareButtons from "./ShareButtons";
+import {
+  IconPlay, IconPause, IconNext, IconPrev,
+  IconShuffle, IconRepeat, IconRepeatOne,
+  IconVolume, IconMute,
+  IconExpand, IconList, IconTrophy,
+} from "./FlatIcons";
 
 type Tab = "playlist" | "ranking";
 
@@ -28,7 +32,7 @@ function ToneArm({ isPlaying }: { isPlaying: boolean }) {
       width: 64,
       height: 96,
       zIndex: 10,
-      transformOrigin: "12px 10px",   // SVGのピボット座標と一致
+      transformOrigin: "12px 10px",
       transform: isPlaying ? "rotate(20deg)" : "rotate(-38deg)",
       transition: "transform 1.1s cubic-bezier(0.4,0,0.2,1)",
     }}>
@@ -71,6 +75,14 @@ function ToneArm({ isPlaying }: { isPlaying: boolean }) {
   );
 }
 
+// 時間フォーマット
+function fmt(sec: number) {
+  if (!isFinite(sec) || isNaN(sec)) return "0:00";
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] }) {
   const engine = useAudioEngine(initialTracks);
   const [tab, setTab] = useState<Tab>("playlist");
@@ -103,6 +115,9 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
     }
   }, [reloadTracks]);
 
+  // ボリュームアイコン切り替え
+  const isMuted = volume === 0;
+
   return (
     <>
       {showNowPlaying && (
@@ -117,24 +132,27 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
 
       {/* ページ背景 */}
       <div className="min-h-screen flex items-center justify-center p-3 md:p-5"
-        style={{ background: "#0A0503" }}>
+        style={{ background: "linear-gradient(160deg, #FFF9F0 0%, #FFF3E0 50%, #FFF0D8 100%)" }}>
 
         {/* キャビネット */}
         <div className="w-full overflow-hidden"
           style={{
             maxWidth: 1000,
             borderRadius: 16,
-            background: "#1C0E06",
-            border: "2px solid #3B1A0A",
-            boxShadow: "0 24px 64px rgba(0,0,0,0.9), 0 4px 16px rgba(0,0,0,0.7)",
+            background: "#FFFDF8",
+            border: "2px solid #E8D5B0",
+            boxShadow: "0 16px 48px rgba(61,43,26,0.18), 0 4px 16px rgba(184,128,10,0.12)",
           }}>
 
           {/* 上部ゴールドライン */}
-          <div style={{ height: 2, background: "linear-gradient(90deg, transparent, #C8860A 30%, #E6A820 50%, #C8860A 70%, transparent)" }} />
+          <div style={{ height: 2, background: "linear-gradient(90deg, transparent, #B8800A 30%, #D4A020 50%, #B8800A 70%, transparent)" }} />
 
-          {/* ヘッダー */}
+          {/* ヘッダー（ダーク） */}
           <div className="flex items-center justify-between px-5 py-3"
-            style={{ background: "linear-gradient(180deg, #2E1508 0%, #1C0E06 100%)", borderBottom: "1.5px solid #3B1A0A" }}>
+            style={{
+              background: "linear-gradient(180deg, #4A2510 0%, #3D1E0A 100%)",
+              borderBottom: "1.5px solid #5A2E12",
+            }}>
             <div className="flex items-center gap-2.5">
               <span style={{ fontSize: 20 }}>🍦</span>
               <div>
@@ -146,7 +164,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                   fontFamily: "'Shippori Mincho', serif",
                   lineHeight: 1.2,
                 }}>ICE CREAM MUSIC BOX</h1>
-                <p style={{ color: "rgba(200,134,10,0.45)", fontSize: 9, letterSpacing: "0.18em" }}>
+                <p style={{ color: "rgba(200,134,10,0.5)", fontSize: 9, letterSpacing: "0.18em" }}>
                   あいぱく BGMプレイヤー
                 </p>
               </div>
@@ -162,10 +180,10 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                   className="flex items-center gap-1.5 transition-all hover:brightness-110 active:scale-95 disabled:opacity-50"
                   style={{
                     padding: "6px 12px",
-                    background: "rgba(93,184,154,0.1)",
-                    border: "1px solid rgba(93,184,154,0.35)",
+                    background: "rgba(107,175,150,0.15)",
+                    border: "1px solid rgba(107,175,150,0.4)",
                     borderRadius: 4,
-                    color: "#5DB89A",
+                    color: "#5A9E84",
                     fontSize: 11,
                     letterSpacing: "0.12em",
                     fontFamily: "'Shippori Mincho', serif",
@@ -173,9 +191,9 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                   }}
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                    <path d="M23 4v6h-6" stroke="#5DB89A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M1 20v-6h6" stroke="#5DB89A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" stroke="#5DB89A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M23 4v6h-6" stroke="#5A9E84" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M1 20v-6h6" stroke="#5A9E84" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" stroke="#5A9E84" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   {reloading ? "読込中…" : "曲を更新"}
                 </button>
@@ -183,10 +201,11 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                 {reloadMsg && (
                   <div style={{
                     position: "absolute", top: "calc(100% + 6px)", right: 0,
-                    background: "#1C0E06", border: "1px solid rgba(93,184,154,0.4)",
-                    color: "#5DB89A", fontSize: 10, padding: "4px 10px",
+                    background: "#FFF9F0", border: "1px solid rgba(107,175,150,0.4)",
+                    color: "#5A9E84", fontSize: 10, padding: "4px 10px",
                     borderRadius: 4, whiteSpace: "nowrap", zIndex: 100,
                     letterSpacing: "0.08em",
+                    boxShadow: "0 2px 8px rgba(61,43,26,0.12)",
                   }}>
                     {reloadMsg}
                   </div>
@@ -199,16 +218,16 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                 className="flex items-center gap-1.5 transition-all hover:brightness-110 active:scale-95"
                 style={{
                   padding: "6px 14px",
-                  background: "rgba(200,134,10,0.1)",
-                  border: "1px solid rgba(200,134,10,0.35)",
+                  background: "rgba(184,128,10,0.15)",
+                  border: "1px solid rgba(184,128,10,0.4)",
                   borderRadius: 4,
-                  color: "#C8860A",
+                  color: "#E6A820",
                   fontSize: 11,
                   letterSpacing: "0.15em",
                   fontFamily: "'Shippori Mincho', serif",
                 }}
               >
-                <IconExpand size={12} color="#C8860A" />
+                <IconExpand size={12} color="#E6A820" />
                 NOW PLAYING
               </button>
             </div>
@@ -217,25 +236,31 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
           {/* 本体 2カラム */}
           <div className="flex flex-col md:flex-row">
 
-            {/* ===== 左: 暗いプレイヤーパネル ===== */}
-            <div className="flex flex-col items-center gap-4 p-5"
+            {/* ===== 左: クリームのプレイヤーパネル ===== */}
+            <div className="flex flex-col items-center gap-4 p-5 md:w-80"
               style={{
                 width: "100%",
-                maxWidth: 320,
-                background: "#160B04",
-                borderRight: "2px solid #3B1A0A",
+                background: "linear-gradient(180deg, #FFF9F0 0%, #FFF5E6 100%)",
+                borderRight: "1.5px solid #E8D5B0",
                 flexShrink: 0,
               }}>
 
-              {/* ターンテーブル台 */}
+              {/* 仕切り装飾（上） */}
+              <div className="w-full flex items-center gap-2">
+                <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, #D4A020)" }} />
+                <span style={{ fontSize: 14, lineHeight: 1 }}>🍦</span>
+                <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, #D4A020, transparent)" }} />
+              </div>
+
+              {/* ターンテーブル台（ダーク維持） */}
               <div className="relative flex items-center justify-center"
                 style={{
-                  width: 260,
-                  height: 260,
+                  width: "min(260px, calc(100vw - 48px))",
+                  height: "min(260px, calc(100vw - 48px))",
                   borderRadius: 8,
                   background: "radial-gradient(circle at 50% 50%, #2A1208 0%, #160A04 60%, #0F0704 100%)",
                   border: "1.5px solid #3B1A0A",
-                  boxShadow: "inset 0 4px 12px rgba(0,0,0,0.7)",
+                  boxShadow: "inset 0 4px 12px rgba(0,0,0,0.7), 0 6px 20px rgba(61,43,26,0.25)",
                 }}>
                 {/* ターンテーブルマット */}
                 <div style={{
@@ -248,7 +273,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                 {/* レコード */}
                 <div style={{ position: "relative", zIndex: 5 }}>
                   <VinylRecord
-                    track={track} isPlaying={isPlaying} size={216}
+                    track={track} isPlaying={isPlaying} size={200}
                     onClick={() => setShowNowPlaying(true)}
                   />
                 </div>
@@ -259,14 +284,13 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
               {/* 曲情報 */}
               <div className="text-center w-full">
                 <p style={{
-                  color: "#F5E6C8",
+                  color: "#3D2B1A",
                   fontSize: 15,
                   fontWeight: 700,
                   fontFamily: "'Shippori Mincho', serif",
                   letterSpacing: "0.04em",
                   lineHeight: 1.4,
                   marginBottom: 2,
-                  // 長い曲名は省略
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -274,54 +298,197 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                 }}>
                   {track.title}
                 </p>
-                <p style={{ color: "rgba(245,230,200,0.45)", fontSize: 11, letterSpacing: "0.14em" }}>
+                <p style={{ color: "#8B6A4A", fontSize: 11, letterSpacing: "0.14em" }}>
                   {track.artist}
                 </p>
                 <span style={{
                   display: "inline-block", marginTop: 6,
                   padding: "2px 10px", fontSize: 10,
-                  background: "rgba(200,134,10,0.1)",
-                  border: "1px solid rgba(200,134,10,0.25)",
-                  color: "#C8860A", letterSpacing: "0.1em",
+                  background: "rgba(184,128,10,0.08)",
+                  border: "1px solid rgba(184,128,10,0.3)",
+                  color: "#B8800A", letterSpacing: "0.1em",
+                  borderRadius: 2,
                 }}>
                   {track.genre}
                 </span>
               </div>
 
-              {/* コントロール */}
-              <div className="w-full">
-                <RetroControls
-                  isPlaying={isPlaying} shuffle={shuffle} repeat={repeat}
-                  progress={progress} volume={volume} duration={duration}
-                  onPlay={play} onPause={pause} onNext={next} onPrev={prev}
-                  onSeek={seek} onVolume={changeVolume}
-                  onToggleShuffle={toggleShuffle} onToggleRepeat={toggleRepeat}
-                />
+              {/* ===== コントロール（インライン） ===== */}
+              <div className="w-full flex flex-col gap-3">
+
+                {/* シークバー */}
+                <div>
+                  <input
+                    type="range" min={0} max={duration || 1} step={0.1}
+                    value={progress}
+                    onChange={(e) => seek(Number(e.target.value))}
+                    className="w-full"
+                    style={{
+                      appearance: "none",
+                      height: 4,
+                      borderRadius: 2,
+                      background: `linear-gradient(90deg, #B8800A ${duration ? (progress / duration * 100) : 0}%, #E8D5B0 0%)`,
+                      outline: "none",
+                      cursor: "pointer",
+                    }}
+                  />
+                  <div className="flex justify-between" style={{ marginTop: 2 }}>
+                    <span style={{ fontSize: 9, color: "#8B6A4A", letterSpacing: "0.08em" }}>{fmt(progress)}</span>
+                    <span style={{ fontSize: 9, color: "#8B6A4A", letterSpacing: "0.08em" }}>{fmt(duration)}</span>
+                  </div>
+                </div>
+
+                {/* メインコントロールボタン */}
+                <div className="flex items-center justify-center gap-3">
+
+                  {/* シャッフル */}
+                  <button
+                    onClick={toggleShuffle}
+                    title="シャッフル"
+                    className="transition-all active:scale-90"
+                    style={{
+                      width: 32, height: 32, borderRadius: "50%",
+                      background: shuffle ? "rgba(184,128,10,0.15)" : "transparent",
+                      border: shuffle ? "1px solid rgba(184,128,10,0.4)" : "1px solid transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <IconShuffle size={16} color={shuffle ? "#B8800A" : "#8B6A4A"} active={shuffle} />
+                  </button>
+
+                  {/* 前の曲 */}
+                  <button
+                    onClick={prev}
+                    title="前の曲"
+                    className="transition-all hover:brightness-95 active:scale-90"
+                    style={{
+                      width: 40, height: 40, borderRadius: "50%",
+                      background: "#FFF9F0",
+                      border: "1.5px solid #3D2B1A",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: "pointer",
+                      boxShadow: "0 2px 6px rgba(61,43,26,0.15)",
+                    }}
+                  >
+                    <IconPrev size={18} color="#3D2B1A" />
+                  </button>
+
+                  {/* 再生/一時停止 */}
+                  <button
+                    onClick={isPlaying ? pause : play}
+                    title={isPlaying ? "一時停止" : "再生"}
+                    className="transition-all hover:brightness-110 active:scale-90"
+                    style={{
+                      width: 52, height: 52, borderRadius: "50%",
+                      background: "linear-gradient(135deg, #D4A020 0%, #B8800A 60%, #9A6A08 100%)",
+                      border: "none",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: "pointer",
+                      boxShadow: "0 4px 14px rgba(184,128,10,0.45), 0 2px 6px rgba(0,0,0,0.2)",
+                    }}
+                  >
+                    {isPlaying
+                      ? <IconPause size={22} color="#FFF9F0" />
+                      : <IconPlay size={22} color="#FFF9F0" />
+                    }
+                  </button>
+
+                  {/* 次の曲 */}
+                  <button
+                    onClick={next}
+                    title="次の曲"
+                    className="transition-all hover:brightness-95 active:scale-90"
+                    style={{
+                      width: 40, height: 40, borderRadius: "50%",
+                      background: "#FFF9F0",
+                      border: "1.5px solid #3D2B1A",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: "pointer",
+                      boxShadow: "0 2px 6px rgba(61,43,26,0.15)",
+                    }}
+                  >
+                    <IconNext size={18} color="#3D2B1A" />
+                  </button>
+
+                  {/* リピート */}
+                  <button
+                    onClick={toggleRepeat}
+                    title="リピート"
+                    className="transition-all active:scale-90"
+                    style={{
+                      width: 32, height: 32, borderRadius: "50%",
+                      background: repeat !== "none" ? "rgba(184,128,10,0.15)" : "transparent",
+                      border: repeat !== "none" ? "1px solid rgba(184,128,10,0.4)" : "1px solid transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {repeat === "one"
+                      ? <IconRepeatOne size={16} color="#B8800A" />
+                      : <IconRepeat size={16} color={repeat !== "none" ? "#B8800A" : "#8B6A4A"} active={repeat !== "none"} />
+                    }
+                  </button>
+                </div>
+
+                {/* ボリューム */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => changeVolume(isMuted ? 0.7 : 0)}
+                    className="transition-all active:scale-90 flex-shrink-0"
+                    style={{ background: "transparent", border: "none", cursor: "pointer", padding: 2 }}
+                  >
+                    {isMuted
+                      ? <IconMute size={16} color="#8B6A4A" />
+                      : <IconVolume size={16} color="#8B6A4A" />
+                    }
+                  </button>
+                  <input
+                    type="range" min={0} max={1} step={0.01}
+                    value={volume}
+                    onChange={(e) => changeVolume(Number(e.target.value))}
+                    className="flex-1"
+                    style={{
+                      appearance: "none",
+                      height: 3,
+                      borderRadius: 2,
+                      background: `linear-gradient(90deg, #B8800A ${volume * 100}%, #E8D5B0 0%)`,
+                      outline: "none",
+                      cursor: "pointer",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* 仕切り（🍦 オーナメント） */}
+              <div className="w-full flex items-center gap-2">
+                <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, #D4A020)" }} />
+                <span style={{ fontSize: 14, lineHeight: 1 }}>🍦</span>
+                <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, #D4A020, transparent)" }} />
               </div>
 
               {/* シェアボタン */}
-              <div className="w-full" style={{ borderTop: "1px solid rgba(59,26,10,0.6)", paddingTop: 12 }}>
+              <div className="w-full">
                 <ShareButtons track={track} />
               </div>
             </div>
 
-            {/* ===== 右: 白いトラックリストパネル ===== */}
+            {/* ===== 右: 明るいトラックリストパネル ===== */}
             <div className="flex-1 flex flex-col min-w-0"
-              style={{ background: "#FAF7F2" }}>
+              style={{ background: "#FFFDF8" }}>
 
               {/* グラフィックイコライザー */}
               <div style={{
-                background: "#1C0E06",
-                borderBottom: "1.5px solid #3B1A0A",
+                background: "#3D1E0A",
+                borderBottom: "1.5px solid #5A2E12",
                 padding: "10px 16px 8px",
               }}>
-                {/* イコライザーラベル */}
                 <div className="flex items-center justify-between mb-1">
-                  <span style={{ fontSize: 9, color: "rgba(200,134,10,0.5)", letterSpacing: "0.2em", fontFamily: "'Shippori Mincho', serif" }}>
+                  <span style={{ fontSize: 9, color: "rgba(230,168,32,0.5)", letterSpacing: "0.2em", fontFamily: "'Shippori Mincho', serif" }}>
                     GRAPHIC EQUALIZER
                   </span>
                   {isPlaying && (
-                    <span style={{ fontSize: 9, color: "#5DB89A", letterSpacing: "0.15em" }}>
+                    <span style={{ fontSize: 9, color: "#6BAF96", letterSpacing: "0.15em" }}>
                       ● REC
                     </span>
                   )}
@@ -331,22 +498,22 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                   isPlaying={isPlaying}
                   barCount={52}
                   height={64}
-                  colorTop="#C8860A"
-                  colorBot="#6B3E00"
+                  colorTop="#D4A020"
+                  colorBot="#7A4E00"
                 />
               </div>
 
               {/* タブバー */}
               <div className="flex"
-                style={{ borderBottom: "1.5px solid #E8DDD0", background: "#FAF7F2" }}>
+                style={{ borderBottom: "1.5px solid #E8D5B0", background: "#FFF9F0" }}>
                 {(["playlist", "ranking"] as Tab[]).map((t) => (
                   <button
                     key={t}
                     onClick={() => setTab(t)}
                     className="flex items-center gap-1.5 px-4 py-2.5 text-xs transition-all"
                     style={{
-                      color: tab === t ? "#C8860A" : "#9B7A58",
-                      borderBottom: tab === t ? "2px solid #C8860A" : "2px solid transparent",
+                      color: tab === t ? "#B8800A" : "#8B6A4A",
+                      borderBottom: tab === t ? "2px solid #B8800A" : "2px solid transparent",
                       background: "transparent",
                       fontWeight: tab === t ? 700 : 400,
                       fontFamily: "'Shippori Mincho', serif",
@@ -354,19 +521,19 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                     }}
                   >
                     {t === "playlist"
-                      ? <><IconList size={13} color={tab === t ? "#C8860A" : "#9B7A58"} /> プレイリスト</>
-                      : <><IconTrophy size={13} color={tab === t ? "#C8860A" : "#9B7A58"} /> 人気ランキング</>
+                      ? <><IconList size={13} color={tab === t ? "#B8800A" : "#8B6A4A"} /> プレイリスト</>
+                      : <><IconTrophy size={13} color={tab === t ? "#B8800A" : "#8B6A4A"} /> 人気ランキング</>
                     }
                   </button>
                 ))}
                 <span className="ml-auto flex items-center px-4 text-xs"
-                  style={{ color: "#C8A880", fontSize: 10 }}>
+                  style={{ color: "#B8A080", fontSize: 10 }}>
                   {trackList.length}曲
                 </span>
               </div>
 
               {/* リスト */}
-              <div style={{ background: "#FAF7F2", flex: 1 }}>
+              <div style={{ background: "#FFFDF8", flex: 1 }}>
                 {tab === "playlist" ? (
                   <RetroPlaylist
                     tracks={trackList} currentIndex={currentIndex}
@@ -384,29 +551,51 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
 
           {/* フッター */}
           <div className="flex items-center justify-between px-5 py-2"
-            style={{ background: "#120805", borderTop: "1.5px solid #3B1A0A" }}>
+            style={{ background: "#3D1E0A", borderTop: "1.5px solid #5A2E12" }}>
             <div className="flex items-center gap-2">
-              {["#D65076", "#5DB89A", "#F5E6C8"].map((c, i) => (
-                <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: c, boxShadow: i < 2 ? `0 0 5px ${c}` : "none", opacity: i === 2 ? 0.5 : 1 }} />
+              {["#D4708A", "#6BAF96", "rgba(230,168,32,0.5)"].map((c, i) => (
+                <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: c, boxShadow: i < 2 ? `0 0 5px ${c}` : "none" }} />
               ))}
             </div>
             <p style={{
-              color: "rgba(200,134,10,0.35)", fontSize: 9,
+              color: "rgba(230,168,32,0.45)", fontSize: 9,
               fontFamily: "'Shippori Mincho', serif", letterSpacing: "0.18em",
             }}>
               🍦 あいぱく BGM — 昭和レトロ × アイスクリーム
             </p>
             <div className="flex items-center gap-2">
-              {["#F5E6C8", "#5DB89A", "#D65076"].map((c, i) => (
-                <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: c, boxShadow: i > 0 ? `0 0 5px ${c}` : "none", opacity: i === 0 ? 0.5 : 1 }} />
+              {["rgba(230,168,32,0.5)", "#6BAF96", "#D4708A"].map((c, i) => (
+                <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: c, boxShadow: i > 0 ? `0 0 5px ${c}` : "none" }} />
               ))}
             </div>
           </div>
 
           {/* 下部ゴールドライン */}
-          <div style={{ height: 2, background: "linear-gradient(90deg, transparent, #C8860A 30%, #E6A820 50%, #C8860A 70%, transparent)" }} />
+          <div style={{ height: 2, background: "linear-gradient(90deg, transparent, #B8800A 30%, #D4A020 50%, #B8800A 70%, transparent)" }} />
         </div>
       </div>
+
+      {/* シークバー・ボリュームスライダーのサム（スタイル） */}
+      <style>{`
+        input[type=range]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: #B8800A;
+          border: 1.5px solid #FFF9F0;
+          box-shadow: 0 1px 4px rgba(184,128,10,0.4);
+          cursor: pointer;
+        }
+        input[type=range]::-moz-range-thumb {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: #B8800A;
+          border: 1.5px solid #FFF9F0;
+          cursor: pointer;
+        }
+      `}</style>
     </>
   );
 }

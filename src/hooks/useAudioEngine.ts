@@ -73,7 +73,8 @@ export function useAudioEngine(initialTracks: Track[]) {
     const audio = new Audio();
     audio.volume = volume;
     audio.preload = "metadata";
-    audio.crossOrigin = "anonymous"; // Web Audio API (createMediaElementSource) に必要
+    // crossOrigin="anonymous" はR2公開URLがCORSヘッダーを返す場合のみ有効
+    // r2.devドメインではCORSが効かないため設定しない（音楽再生を優先）
     audioRef.current = audio;
 
     const onTimeUpdate = () => {

@@ -311,12 +311,8 @@ export const tracks: Track[] = [
 export const getRanking = (): Track[] =>
   [...tracks].sort((a, b) => b.plays - a.plays);
 
-export const getAudioUrl = (filename: string): string => {
-  // 本番環境（R2）: パブリックURLを直接返す
-  const r2Base = process.env.NEXT_PUBLIC_R2_URL;
-  if (r2Base) {
-    return `${r2Base}/audio/${encodeURIComponent(filename)}`;
-  }
-  // 開発環境: ローカルAPIルート経由
-  return `/api/audio/${encodeURIComponent(filename)}`;
-};
+// 本番・開発ともに /api/audio/ 経由でストリーム
+// 本番: APIルートがR2からプロキシ（CORSヘッダー付与）
+// 開発: APIルートがローカルファイルを直接ストリーム
+export const getAudioUrl = (filename: string): string =>
+  `/api/audio/${encodeURIComponent(filename)}`;
