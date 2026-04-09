@@ -1,5 +1,5 @@
 // ICE CREAM MUSIC BOX — Service Worker
-const CACHE_NAME = "icmb-v2";
+const CACHE_NAME = "icmb-v3";
 
 // キャッシュするファイル（アプリシェル）
 const PRECACHE = [
@@ -30,10 +30,10 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // 音声ファイル（/api/audio/）はキャッシュしない（大容量のため）
-  if (url.pathname.startsWith("/api/audio/")) return;
+  // APIルートとPOSTリクエストはSWでインターセプトしない（必ずサーバーへ）
+  if (url.pathname.startsWith("/api/")) return;
 
-  // ナビゲーションリクエスト → キャッシュ優先、失敗時はネットワーク
+  // ナビゲーションリクエスト（ページ遷移）→ キャッシュ優先
   if (request.mode === "navigate") {
     event.respondWith(
       caches.match("/").then((cached) => cached || fetch(request))
@@ -41,11 +41,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // その他 → ネットワーク優先、失敗時はキャッシュ
+  // 静的アセット → ネットワーク優先、失敗時はキャッシュ
   event.respondWith(
     fetch(request)
       .then((res) => {
-        // 成功したらキャッシュに保存（GETのみ）
         if (request.method === "GET" && res.status === 200) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
