@@ -65,10 +65,11 @@ export default function RetroRankings({
             {/* 曲情報 + バー */}
             <div className="flex-1 min-w-0">
               <p
-                className="truncate font-500 text-sm"
                 style={{
                   color: isActive ? "#2A1208" : "#3D2010",
                   fontFamily: isActive ? "'Shippori Mincho', serif" : "inherit",
+                  fontSize: 14, fontWeight: isActive ? 700 : 400,
+                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 }}
               >
                 {t.title}

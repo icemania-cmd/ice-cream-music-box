@@ -62,16 +62,17 @@ export default function RetroPlaylist({
             {/* 曲情報 */}
             <div className="flex-1 min-w-0">
               <p
-                className="truncate font-500 text-sm"
                 style={{
                   color: isCurrent ? "#2A1208" : "#3D2010",
                   fontFamily: isCurrent ? "'Shippori Mincho', serif" : "inherit",
                   letterSpacing: isCurrent ? "0.02em" : "normal",
+                  fontSize: 14, fontWeight: isCurrent ? 700 : 400,
+                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 }}
               >
                 {t.title}
               </p>
-              <p className="text-xs truncate" style={{ color: "#9B7A58", fontSize: 10 }}>
+              <p style={{ color: "#9B7A58", fontSize: 10, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {t.genre}
               </p>
             </div>

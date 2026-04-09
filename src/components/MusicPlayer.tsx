@@ -133,8 +133,8 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
               <div>
                 <h1 style={{
                   color: "#E6A820", fontSize: 13, fontWeight: 700,
-                  letterSpacing: "0.22em", fontFamily: "'Shippori Mincho', serif", lineHeight: 1.2,
-                }}>ICE CREAM MUSIC BOX</h1>
+                  letterSpacing: "0.22em", fontFamily: "'Shippori Mincho', serif", lineHeight: 1.3,
+                }}>ICE CREAM<br />MUSIC BOX</h1>
                 <p style={{ color: "rgba(200,134,10,0.5)", fontSize: 9, letterSpacing: "0.18em" }}>
                   あいぱく BGMプレイヤー
                 </p>

@@ -43,6 +43,16 @@ export default function VinylRecord({ track, isPlaying, size = 240, onClick }: P
   }
 
   return (
+    // 外側ラッパー: 回転しない → シャドーが動かない
+    <div
+      style={{
+        width: size,
+        height: size,
+        flexShrink: 0,
+        filter: `drop-shadow(0 10px 28px rgba(0,0,0,0.75))`,
+      }}
+    >
+    {/* 内側ラッパー: 回転する → レコード本体のみ回転 */}
     <div
       ref={divRef}
       onClick={onClick}
@@ -50,8 +60,6 @@ export default function VinylRecord({ track, isPlaying, size = 240, onClick }: P
         width: size,
         height: size,
         cursor: onClick ? "pointer" : "default",
-        filter: `drop-shadow(0 10px 28px rgba(0,0,0,0.85))`,
-        flexShrink: 0,
         willChange: "transform",
       }}
     >
@@ -121,6 +129,7 @@ export default function VinylRecord({ track, isPlaying, size = 240, onClick }: P
         {/* 外縁 */}
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1C1C1C" strokeWidth="2" />
       </svg>
+    </div>
     </div>
   );
 }
