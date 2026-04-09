@@ -221,7 +221,6 @@ export function useAudioEngine(initialTracks: Track[]) {
     (idx: number) => {
       const audio = audioRef.current;
       if (!audio) return;
-      const wasWantingPlay = !wantsPausedRef.current;
 
       setCurrentIndex(idx);
       currentIndexRef.current = idx;
@@ -238,12 +237,11 @@ export function useAudioEngine(initialTracks: Track[]) {
       setProgress(0);
       setDuration(0);
 
-      if (wasWantingPlay) {
-        ensureAnalyser();
-        if (ctxRef.current?.state === "suspended") ctxRef.current.resume();
-        startPlay(audio);
-        setPlayCounts((prev) => ({ ...prev, [t.id]: (prev[t.id] ?? 0) + 1 }));
-      }
+      // 曲を選択したら常に再生開始（停止中でも同様）
+      ensureAnalyser();
+      if (ctxRef.current?.state === "suspended") ctxRef.current.resume();
+      startPlay(audio);
+      setPlayCounts((prev) => ({ ...prev, [t.id]: (prev[t.id] ?? 0) + 1 }));
     },
     [tracks, ensureAnalyser, startPlay]
   );
