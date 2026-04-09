@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { M_PLUS_Rounded_1c, Shippori_Mincho } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import RegisterSW from "@/components/RegisterSW";
@@ -22,20 +22,30 @@ export const metadata: Metadata = {
   title: "ICE CREAM MUSIC BOX",
   description: "アイスクリームの歌だけを集めたアイスクリーム特化型ミュージックボックス。あいぱく会場のBGMが楽しめます。",
   manifest: "/manifest.json",
+  // iOS Safari用: ホーム画面追加時の設定
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "ICE CREAM MUSIC BOX",
   },
+  // アイコン
   icons: {
     icon: [
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
+    // iOSホーム画面アイコン（apple-touch-icon）
     apple: [
-      { url: "/icon-192.png" },
+      { url: "/icon-512.png", sizes: "512x512" },
     ],
   },
+};
+
+// theme-color は viewport exportで設定（App Router推奨）
+export const viewport: Viewport = {
+  themeColor: "#C8860A",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -45,13 +55,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" className={`${mplus.variable} ${shippori.variable} h-full`}>
-      <head>
-        <meta name="theme-color" content="#C8860A" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="ICE CREAM MUSIC BOX" />
-      </head>
       <body
         className="min-h-full flex flex-col"
         style={{
