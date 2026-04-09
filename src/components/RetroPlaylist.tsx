@@ -17,7 +17,6 @@ export default function RetroPlaylist({
     <div className="overflow-y-auto" style={{ maxHeight: 380 }}>
       {tracks.map((t, idx) => {
         const isCurrent = idx === currentIndex;
-        const plays = playCounts[t.id] ?? t.plays;
         return (
           <button
             key={t.id}
@@ -77,10 +76,6 @@ export default function RetroPlaylist({
               </p>
             </div>
 
-            {/* 再生回数 */}
-            <span className="tabular-nums flex-shrink-0 text-xs" style={{ color: "#B09070", fontSize: 10 }}>
-              {plays.toLocaleString()}
-            </span>
           </button>
         );
       })}

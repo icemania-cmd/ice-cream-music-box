@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { M_PLUS_Rounded_1c, Shippori_Mincho } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const mplus = M_PLUS_Rounded_1c({
@@ -18,7 +19,7 @@ const shippori = Shippori_Mincho({
 
 export const metadata: Metadata = {
   title: "ICE CREAM MUSIC BOX",
-  description: "あいぱく BGM プレイヤー",
+  description: "アイスクリームの歌だけを集めたアイスクリーム特化型ミュージックボックス。あいぱく会場のBGMが楽しめます。",
 };
 
 export default function RootLayout({
@@ -35,6 +36,7 @@ export default function RootLayout({
         }}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );

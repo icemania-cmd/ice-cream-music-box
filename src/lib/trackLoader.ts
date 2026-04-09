@@ -63,7 +63,7 @@ export function loadTracksFromFolder(): Track[] {
     return {
       id: idx + 1,
       title:  m.title  ?? titleFromFilename(filename),
-      artist: m.artist ?? "AI-SONG",
+      artist: m.artist ?? "ICECREAM SONG",
       genre:  m.genre  ?? "BGM",
       plays:  m.plays  ?? 0,
       color:  m.color  ?? colorFromFilename(filename),

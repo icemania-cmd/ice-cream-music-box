@@ -87,11 +87,6 @@ export default function RetroRankings({
               </div>
             </div>
 
-            {/* 再生回数 */}
-            <span className="tabular-nums flex-shrink-0 text-xs"
-              style={{ color: isActive ? "#C8860A" : "#B09070", fontSize: 10 }}>
-              {plays.toLocaleString()}
-            </span>
           </button>
         );
       })}

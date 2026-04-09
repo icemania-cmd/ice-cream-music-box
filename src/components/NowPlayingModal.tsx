@@ -76,14 +76,14 @@ export default function NowPlayingModal({
 
       {/* レコード */}
       <div className="relative mb-8" style={{ marginTop: 20 }}>
-        {/* ターンテーブル台 */}
+        {/* ターンテーブル台（シルバー） */}
         <div style={{
           position: "absolute",
           inset: -28,
           borderRadius: "50%",
-          background: "radial-gradient(circle, #2A1208 0%, #160A04 70%)",
-          border: "2px solid #3B1A0A",
-          boxShadow: "0 12px 40px rgba(0,0,0,0.8)",
+          background: "radial-gradient(circle at 35% 30%, #ECECEC 0%, #C8C8C8 40%, #A8A8A8 70%, #B8B8B8 100%)",
+          border: "2px solid #D0D0D0",
+          boxShadow: "0 12px 40px rgba(0,0,0,0.8), inset 0 2px 6px rgba(255,255,255,0.6), inset 0 -2px 6px rgba(0,0,0,0.3)",
         }} />
         <VinylRecord track={track} isPlaying={isPlaying} size={260} onClick={() => {}} />
       </div>
