@@ -30,16 +30,16 @@ async function getCurrentCount(): Promise<number> {
   return await redis<number>(["ZCARD", "listeners"]);
 }
 
-/** GET: 現在のリスナー数を返す（デバッグ情報付き） */
+/** GET: 現在のリスナー数を返す */
 export async function GET() {
   if (!REDIS_URL || !REDIS_TOKEN) {
-    return NextResponse.json({ count: 0, debug: "env_missing" });
+    return NextResponse.json({ count: 0 });
   }
   try {
     const count = await getCurrentCount();
-    return NextResponse.json({ count, debug: "ok" });
-  } catch (e) {
-    return NextResponse.json({ count: 0, debug: "redis_error", error: String(e) });
+    return NextResponse.json({ count });
+  } catch {
+    return NextResponse.json({ count: 0 });
   }
 }
 

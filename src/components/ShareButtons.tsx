@@ -46,7 +46,9 @@ function CheckIcon({ size = 16, color = "currentColor" }: { size?: number; color
 export default function ShareButtons({ track }: Props) {
   const [copied, setCopied] = useState(false);
 
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "https://ice-cream-music-box.vercel.app";
+  const shareUrl = typeof window !== "undefined"
+    ? window.location.origin   // ドメインのみ（パスは含まない）
+    : "https://www.ice-mbox.fun";
   const text = `🍦 いま「${track.title}」を聴いています！\n#あいぱく #アイスクリーム\n${shareUrl}`;
 
   // X (Twitter) シェア
