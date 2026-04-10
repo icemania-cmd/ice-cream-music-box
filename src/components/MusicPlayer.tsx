@@ -436,10 +436,77 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
           {/* ─── リアルタイムリスナー数 ─── */}
           <LiveListeners />
 
+          {/* ─── フルワイド ターンテーブルセクション ─── */}
+          <div style={{
+            position: "relative",
+            width: "100vw",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: [
+              "repeating-linear-gradient(0deg, transparent 0px, rgba(0,0,0,0.045) 1px, transparent 2px, rgba(0,0,0,0.02) 4px, transparent 6px)",
+              "repeating-linear-gradient(90deg, transparent 0px, rgba(255,180,60,0.012) 25px, transparent 50px)",
+              "linear-gradient(178deg, #5C2C0A 0%, #7B3E10 7%, #6A3010 14%, #8B4A1A 21%, #6B3010 28%, #7A3C0E 35%, #5C2C0A 42%, #8B4A1A 49%, #6B3010 56%, #7B3E10 63%, #5C2A08 70%, #8A481A 77%, #6B3010 84%, #7B3E10 91%, #5C2C0A 100%)"
+            ].join(", "),
+            padding: "44px 0 32px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 20,
+            boxShadow: "inset 0 -6px 20px rgba(0,0,0,0.35), inset 0 2px 8px rgba(0,0,0,0.2)",
+          }}>
+            {/* ターンテーブル台（シルバー）+ レコード + アーム */}
+            <div className="relative flex items-center justify-center"
+              style={{
+                width: "min(320px, calc(100vw - 40px))",
+                height: "min(320px, calc(100vw - 40px))",
+                borderRadius: 16,
+                background: SILVER_BG,
+                border: SILVER_BORDER,
+                boxShadow: "0 8px 40px rgba(0,0,0,0.55), " + SILVER_SHADOW,
+              }}>
+              {/* ターンテーブルマット（丸い黒い台） */}
+              <div style={{
+                position: "absolute",
+                width: "84%", height: "84%", borderRadius: "50%",
+                background: "radial-gradient(circle, #231008 0%, #160A04 100%)",
+                border: "1px solid rgba(74,40,8,0.4)",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.4)",
+              }} />
+              <div style={{ position: "relative", zIndex: 5 }}>
+                <VinylRecord track={track} isPlaying={isPlaying} size={260} onClick={() => setShowNowPlaying(true)} />
+              </div>
+              <ToneArm isPlaying={isPlaying} />
+            </div>
+
+            {/* 曲情報（木目背景の上） */}
+            <div className="text-center" style={{ maxWidth: "min(320px, calc(100vw - 40px))" }}>
+              <MarqueeTitle
+                title={track.title}
+                style={{
+                  color: "#FFF9F0", fontSize: 16, fontWeight: 700,
+                  fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif", letterSpacing: "0.04em",
+                  lineHeight: 1.4, marginBottom: 4,
+                  display: "block",
+                  textShadow: "0 1px 6px rgba(0,0,0,0.7)",
+                }}
+              />
+              <p style={{ color: "rgba(255,235,180,0.85)", fontSize: 11, letterSpacing: "0.14em", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                {displayArtist(track.artist)}
+              </p>
+              <span style={{
+                display: "inline-block", marginTop: 6, padding: "2px 10px", fontSize: 10,
+                background: "rgba(255,200,50,0.1)", border: "1px solid rgba(255,200,80,0.3)",
+                color: "rgba(255,220,120,0.9)", letterSpacing: "0.1em", borderRadius: 2,
+              }}>
+                {track.genre}
+              </span>
+            </div>
+          </div>
+
           {/* ─── 本体 2カラム ─── */}
           <div className="flex flex-col md:flex-row flex-1">
 
-            {/* ═══ 左: ターンテーブル + コントロール ═══ */}
+            {/* ═══ 左: コントロール ═══ */}
             <div className="flex flex-col items-center gap-4 p-5 md:w-80 flex-shrink-0"
               style={{
                 background: "linear-gradient(180deg, #FFF9F0 0%, #FFF5E6 100%)",
@@ -452,53 +519,6 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                 <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, #D4A020)" }} />
                 <span style={{ fontSize: 13 }}>🍦</span>
                 <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, #D4A020, transparent)" }} />
-              </div>
-
-              {/* ターンテーブル台（シルバー） */}
-              <div className="relative flex items-center justify-center"
-                style={{
-                  width: "min(260px, calc(100vw - 48px))",
-                  height: "min(260px, calc(100vw - 48px))",
-                  borderRadius: 12,
-                  background: SILVER_BG,
-                  border: SILVER_BORDER,
-                  boxShadow: SILVER_SHADOW,
-                }}>
-                {/* ターンテーブルマット（丸い黒い台） */}
-                <div style={{
-                  position: "absolute",
-                  width: "84%", height: "84%", borderRadius: "50%",
-                  background: "radial-gradient(circle, #231008 0%, #160A04 100%)",
-                  border: "1px solid rgba(74,40,8,0.4)",
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.4)",
-                }} />
-                <div style={{ position: "relative", zIndex: 5 }}>
-                  <VinylRecord track={track} isPlaying={isPlaying} size={200} onClick={() => setShowNowPlaying(true)} />
-                </div>
-                <ToneArm isPlaying={isPlaying} />
-              </div>
-
-              {/* 曲情報 */}
-              <div className="text-center w-full">
-                <MarqueeTitle
-                  title={track.title}
-                  style={{
-                    color: "#3D2B1A", fontSize: 15, fontWeight: 700,
-                    fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif", letterSpacing: "0.04em",
-                    lineHeight: 1.4, marginBottom: 2,
-                    display: "block",
-                  }}
-                />
-                <p style={{ color: "#8B6A4A", fontSize: 11, letterSpacing: "0.14em" }}>
-                  {displayArtist(track.artist)}
-                </p>
-                <span style={{
-                  display: "inline-block", marginTop: 6, padding: "2px 10px", fontSize: 10,
-                  background: "rgba(184,128,10,0.08)", border: "1px solid rgba(184,128,10,0.3)",
-                  color: "#B8800A", letterSpacing: "0.1em", borderRadius: 2,
-                }}>
-                  {track.genre}
-                </span>
               </div>
 
               {/* ── シークバー ── */}
