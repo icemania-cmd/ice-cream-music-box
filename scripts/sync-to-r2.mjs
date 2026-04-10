@@ -28,13 +28,15 @@ const CONCURRENCY = 3;
 
 // プレイリストから除外するファイル名（R2には残るが曲一覧に表示しない）
 const EXCLUDED_FILES = [
-  "一日くらい大丈夫(Remastered_v5.5).wav",
+  // 現在除外対象なし
 ];
 
 // プレイリスト先頭に固定表示するファイル名（順番通りに先頭へ）
+// ※ I am ice cream 1と2が連続しないよう3曲目に2を配置
 const PINNED_TRACKS = [
-  "一日くらい大丈夫（V5）.wav",   // 1曲目
-  "Scoop Me Up.wav",              // 2曲目
+  "一日くらい大丈夫(Remastered_v5.5).wav",   // 1曲目
+  "Scoop Me Up.wav",                          // 2曲目
+  "I am ice cream2（he-v5.5）.wav",           // 3曲目（I am ice cream 1と離す）
 ];
 
 // ──────────────────────────────────────────────
