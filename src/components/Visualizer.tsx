@@ -7,21 +7,26 @@ type Props = {
   isPlaying: boolean;
   barCount?: number;
   height?: number;
+  // 後方互換のため残すが使用しない
   colorTop?: string;
   colorBot?: string;
 };
 
+// セグメント1個の高さ（px）
+const SEG_H = 3;
+// セグメント間の隙間（px）
+const SEG_GAP = 1;
+// セグメント1ユニットの高さ合計
+const SEG_UNIT = SEG_H + SEG_GAP;
+
 export default function Visualizer({
   analyserRef,
   isPlaying,
-  barCount = 48,
-  height = 72,
-  colorTop = "#C8860A",
-  colorBot = "#8B5E00",
+  barCount = 52,
+  height = 60,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
-  // 各バーの現在の高さ（スムージング用）
   const heightsRef = useRef<Float32Array>(new Float32Array(barCount));
 
   useEffect(() => {
@@ -37,35 +42,39 @@ export default function Visualizer({
     canvas.height = H * dpr;
     ctx.scale(dpr, dpr);
 
+    const totalSegments = Math.floor(H / SEG_UNIT);
+
     const draw = () => {
       rafRef.current = requestAnimationFrame(draw);
       ctx.clearRect(0, 0, W, H);
 
       const analyser = analyserRef.current;
       const totalBarW = W / barCount;
-      const barW = Math.max(2, totalBarW * 0.65);
+      // バー幅：隙間を確保してセグメントを際立たせる
+      const barW = Math.max(2, totalBarW * 0.72);
       const gap = totalBarW - barW;
 
       if (!analyser || !isPlaying) {
-        // アイドル状態：小さな波打つバー
+        // アイドル：低い波打ち
         for (let i = 0; i < barCount; i++) {
           const idleH = 3 + Math.sin(Date.now() * 0.002 + i * 0.4) * 1.5;
           heightsRef.current[i] += (idleH - heightsRef.current[i]) * 0.12;
-          const h = heightsRef.current[i];
+          const barH = heightsRef.current[i];
           const x = gap / 2 + i * totalBarW;
-          ctx.fillStyle = colorBot + "55";
-          ctx.beginPath();
-          ctx.roundRect(x, H - h, barW, h, 1);
-          ctx.fill();
+          const segs = Math.floor(barH / SEG_UNIT);
+          for (let s = 0; s < segs; s++) {
+            const y = H - (s + 1) * SEG_UNIT;
+            ctx.fillStyle = "rgba(0, 180, 220, 0.25)";
+            ctx.fillRect(x, y, barW, SEG_H);
+          }
         }
         return;
       }
 
-      const bufferLength = analyser.frequencyBinCount; // fftSize/2 = 64
+      const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
       analyser.getByteFrequencyData(dataArray);
 
-      // 低域〜中域を重点的にマッピング（高域は聴感上少なめ）
       const step = Math.floor(bufferLength * 0.7 / barCount);
 
       for (let i = 0; i < barCount; i++) {
@@ -75,40 +84,54 @@ export default function Visualizer({
           sum += dataArray[Math.min(start + j, bufferLength - 1)] ?? 0;
         }
         const avg = sum / Math.max(1, step);
-        // 感度ブースト：低い値でもバーが立つように
-        const rawH = Math.pow(avg / 255, 0.7) * H * 0.9;
-        const targetH = Math.max(3, rawH);
-        // 上がるのは速く、下がるのはゆっくり（リアルVU動作）
-        const ease = rawH > heightsRef.current[i] ? 0.35 : 0.1;
+        const rawH = Math.pow(avg / 255, 0.7) * H * 0.92;
+        const targetH = Math.max(SEG_UNIT, rawH);
+        const ease = rawH > heightsRef.current[i] ? 0.38 : 0.10;
         heightsRef.current[i] += (targetH - heightsRef.current[i]) * ease;
         const barH = heightsRef.current[i];
 
         const x = gap / 2 + i * totalBarW;
+        const activeSeg = Math.floor(barH / SEG_UNIT);
 
-        // グラデーションバー
-        const grad = ctx.createLinearGradient(0, H - barH, 0, H);
-        grad.addColorStop(0, colorTop + "EE");
-        grad.addColorStop(0.6, colorBot + "CC");
-        grad.addColorStop(1, colorBot + "66");
-        ctx.fillStyle = grad;
+        for (let s = 0; s < activeSeg && s < totalSegments; s++) {
+          // セグメントのy位置（下から積み上げ）
+          const y = H - (s + 1) * SEG_UNIT;
+          // 0=底面, 1=頂点
+          const ratio = s / Math.max(1, activeSeg - 1);
 
-        ctx.beginPath();
-        ctx.roundRect(x, H - barH, barW, barH, [2, 2, 1, 1]);
-        ctx.fill();
+          // 水色グラデーション：底は深い水色、上にいくほど明るい水色→白みがかった水色
+          let r: number, g: number, b: number, a: number;
+          if (ratio < 0.6) {
+            // 底〜中間：#0080CC → #00C8FF
+            const t = ratio / 0.6;
+            r = Math.round(0 + 0 * t);
+            g = Math.round(128 + (200 - 128) * t);
+            b = Math.round(204 + (255 - 204) * t);
+            a = 0.75 + 0.15 * t;
+          } else {
+            // 中間〜頂点：#00C8FF → #80EEFF（白みがかった水色）
+            const t = (ratio - 0.6) / 0.4;
+            r = Math.round(0 + 128 * t);
+            g = Math.round(200 + (238 - 200) * t);
+            b = Math.round(255);
+            a = 0.90 + 0.10 * t;
+          }
 
-        // ハイライト（バー頂点の白い光）
-        if (barH > 10) {
-          ctx.fillStyle = "rgba(255,255,255,0.18)";
-          ctx.beginPath();
-          ctx.roundRect(x, H - barH, barW, Math.min(4, barH * 0.2), [2, 2, 0, 0]);
-          ctx.fill();
+          ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+          ctx.fillRect(x, y, barW, SEG_H);
+
+          // 頂点付近のセグメントにハイライト（白い光）
+          if (s >= activeSeg - 2 && activeSeg > 3) {
+            ctx.fillStyle = `rgba(255,255,255,${0.28 * (s === activeSeg - 1 ? 1 : 0.5)})`;
+            ctx.fillRect(x, y, barW, SEG_H);
+          }
         }
       }
     };
 
     draw();
     return () => cancelAnimationFrame(rafRef.current);
-  }, [analyserRef, isPlaying, barCount, height, colorTop, colorBot]);
+  }, [analyserRef, isPlaying, barCount, height]);
 
   return (
     <canvas
