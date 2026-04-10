@@ -47,12 +47,12 @@ function ToneArm({ isPlaying }: { isPlaying: boolean }) {
   return (
     <div style={{
       position: "absolute", top: "4%", right: "2%",
-      width: 64, height: 96, zIndex: 10,
-      transformOrigin: "12px 10px",
+      width: 37, height: 55, zIndex: 10,
+      transformOrigin: "7px 6px",
       transform: isPlaying ? "rotate(20deg)" : "rotate(-38deg)",
       transition: "transform 1.1s cubic-bezier(0.4,0,0.2,1)",
     }}>
-      <svg width="64" height="96" viewBox="0 0 64 96">
+      <svg width="37" height="55" viewBox="0 0 64 96">
         <rect x="54" y="2" width="8" height="14" rx="2" fill="#2A1208" stroke="#8B5E00" strokeWidth="0.8" />
         <rect x="55" y="3" width="6" height="3" rx="1" fill="#C8860A" opacity="0.6" />
         <circle cx="12" cy="10" r="9" fill="#2A1208" stroke="#6B3E00" strokeWidth="1" />
@@ -447,22 +447,22 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
               "repeating-linear-gradient(90deg, transparent 0px, rgba(255,180,60,0.012) 25px, transparent 50px)",
               "linear-gradient(178deg, #5C2C0A 0%, #7B3E10 7%, #6A3010 14%, #8B4A1A 21%, #6B3010 28%, #7A3C0E 35%, #5C2C0A 42%, #8B4A1A 49%, #6B3010 56%, #7B3E10 63%, #5C2A08 70%, #8A481A 77%, #6B3010 84%, #7B3E10 91%, #5C2C0A 100%)"
             ].join(", "),
-            padding: "44px 0 32px",
+            padding: "20px 0 16px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 20,
+            gap: 12,
             boxShadow: "inset 0 -6px 20px rgba(0,0,0,0.35), inset 0 2px 8px rgba(0,0,0,0.2)",
           }}>
             {/* ターンテーブル台（シルバー）+ レコード + アーム */}
             <div className="relative flex items-center justify-center"
               style={{
-                width: "min(320px, calc(100vw - 40px))",
-                height: "min(320px, calc(100vw - 40px))",
-                borderRadius: 16,
+                width: "min(160px, calc(100vw - 40px))",
+                height: "min(160px, calc(100vw - 40px))",
+                borderRadius: 10,
                 background: SILVER_BG,
                 border: SILVER_BORDER,
-                boxShadow: "0 8px 40px rgba(0,0,0,0.55), " + SILVER_SHADOW,
+                boxShadow: "0 4px 20px rgba(0,0,0,0.45), " + SILVER_SHADOW,
               }}>
               {/* ターンテーブルマット（丸い黒い台） */}
               <div style={{
@@ -473,17 +473,17 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                 boxShadow: "0 2px 10px rgba(0,0,0,0.4)",
               }} />
               <div style={{ position: "relative", zIndex: 5 }}>
-                <VinylRecord track={track} isPlaying={isPlaying} size={260} onClick={() => setShowNowPlaying(true)} />
+                <VinylRecord track={track} isPlaying={isPlaying} size={130} onClick={() => setShowNowPlaying(true)} />
               </div>
               <ToneArm isPlaying={isPlaying} />
             </div>
 
             {/* 曲情報（木目背景の上） */}
-            <div className="text-center" style={{ maxWidth: "min(320px, calc(100vw - 40px))" }}>
+            <div className="text-center" style={{ maxWidth: "min(160px, calc(100vw - 40px))" }}>
               <MarqueeTitle
                 title={track.title}
                 style={{
-                  color: "#FFF9F0", fontSize: 16, fontWeight: 700,
+                  color: "#FFF9F0", fontSize: 12, fontWeight: 700,
                   fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif", letterSpacing: "0.04em",
                   lineHeight: 1.4, marginBottom: 4,
                   display: "block",
