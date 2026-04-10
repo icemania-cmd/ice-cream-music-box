@@ -28,7 +28,7 @@ const CONCURRENCY = 3;
 
 // プレイリストから除外するファイル名（R2には残るが曲一覧に表示しない）
 const EXCLUDED_FILES = [
-  // 現在除外対象なし
+  "ONIUMA ICECREAM.wav", // v5.5に差し替え済み
 ];
 
 // プレイリスト先頭に固定表示するファイル名（順番通りに先頭へ）
