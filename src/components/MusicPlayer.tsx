@@ -17,7 +17,7 @@ import {
   IconShuffle, IconRepeat, IconRepeatOne,
   IconExpand, IconList, IconTrophy,
 } from "./FlatIcons";
-import { Volume1, Volume2, VolumeX, Zap } from "lucide-react";
+import { Volume1, Volume2, VolumeX, Zap, RotateCcw, RotateCw } from "lucide-react";
 
 type Tab = "playlist" | "ranking";
 
@@ -514,144 +514,139 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                 borderBottom: "1.5px solid #E8D5B0",
               }}>
 
-              {/* 仕切り装飾 */}
-              <div className="w-full flex items-center gap-2">
-                <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, #D4A020)" }} />
-                <span style={{ fontSize: 13 }}>🍦</span>
-                <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, #D4A020, transparent)" }} />
-              </div>
-
-              {/* ── シークバー ── */}
-              <div className="w-full flex flex-col gap-1">
-                <div className="relative flex items-center" style={{ height: 24 }}>
-                  <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-full"
-                    style={{ height: 4, background: "rgba(60,30,10,0.12)" }} />
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+              {/* ── シークバー（プログレスバー表示のみ） ── */}
+              <div className="w-full flex flex-col gap-1.5">
+                {/* プログレスバー */}
+                <div className="relative w-full" style={{ height: 6, borderRadius: 3, background: "rgba(60,30,10,0.12)", overflow: "hidden" }}>
+                  <div className="absolute left-0 top-0 h-full"
                     style={{
-                      height: 4, width: `${progress * 100}%`,
-                      background: "linear-gradient(90deg, #B8800A, #D4A020)", zIndex: 1,
-                    }} />
-                  <input type="range" min={0} max={1} step={0.001} value={progress}
-                    onChange={(e) => seek(parseFloat(e.target.value))}
-                    className="w-full absolute inset-0 opacity-0 cursor-pointer" style={{ zIndex: 2 }} />
-                  <div className="absolute top-1/2 -translate-y-1/2 pointer-events-none"
-                    style={{
-                      left: `calc(${progress * 100}% - 8px)`,
-                      width: 16, height: 16, borderRadius: "50%",
-                      background: "radial-gradient(circle at 35% 35%, #F0C84A, #B8800A)",
-                      boxShadow: "0 1px 6px rgba(100,60,10,0.4)", zIndex: 3,
+                      width: `${progress * 100}%`,
+                      background: "linear-gradient(90deg, #B8800A, #D4A020)",
+                      borderRadius: 3,
+                      transition: "width 0.4s linear",
                     }} />
                 </div>
+                {/* 時間表示 */}
                 <div className="flex items-center justify-between">
                   <span style={{ fontSize: 10, color: "#8B6A4A", fontVariantNumeric: "tabular-nums" as const, minWidth: 30 }}>{fmt(elapsed)}</span>
-
-                  {/* ±15秒送りボタン */}
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => seekRelative(-15)}
-                      title="-15秒"
-                      className="flex items-center gap-0.5 transition-all active:scale-90"
-                      style={{
-                        padding: "2px 7px", borderRadius: 4,
-                        background: "rgba(61,43,26,0.06)",
-                        border: "1px solid rgba(139,106,74,0.25)",
-                        color: "#8B6A4A", fontSize: 9, letterSpacing: "0.04em",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" style={{ marginRight: 1 }}>
-                        <path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="#8B6A4A"/>
-                      </svg>
-                      15
-                    </button>
-                    <button
-                      onClick={() => seekRelative(15)}
-                      title="+15秒"
-                      className="flex items-center gap-0.5 transition-all active:scale-90"
-                      style={{
-                        padding: "2px 7px", borderRadius: 4,
-                        background: "rgba(61,43,26,0.06)",
-                        border: "1px solid rgba(139,106,74,0.25)",
-                        color: "#8B6A4A", fontSize: 9, letterSpacing: "0.04em",
-                        cursor: "pointer",
-                      }}
-                    >
-                      15
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" style={{ marginLeft: 1 }}>
-                        <path d="M12 5V2l4 4-4 4V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z" fill="#8B6A4A"/>
-                      </svg>
-                    </button>
-                  </div>
-
                   <span style={{ fontSize: 10, color: "#8B6A4A", fontVariantNumeric: "tabular-nums" as const, minWidth: 30, textAlign: "right" }}>{fmt(duration)}</span>
                 </div>
               </div>
 
-              {/* ── メインコントロール ── */}
-              <div className="flex items-center justify-center gap-3 w-full">
-                <button onClick={toggleShuffle} className="transition-all active:scale-90"
+              {/* ── グラフィックイコライザー ── */}
+              <div className="w-full" style={{
+                borderRadius: 8,
+                background: "linear-gradient(180deg, #2A1208 0%, #1E0D06 100%)",
+                border: "1px solid rgba(90,46,18,0.5)",
+                padding: "8px 12px 6px",
+              }}>
+                <div className="flex items-center justify-between mb-1">
+                  <span style={{ fontSize: 8, color: "rgba(230,168,32,0.45)", letterSpacing: "0.2em", fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif" }}>
+                    GRAPHIC EQ
+                  </span>
+                  {isPlaying && (
+                    <span style={{ fontSize: 8, color: "#6BAF96", letterSpacing: "0.15em" }}>● LIVE</span>
+                  )}
+                </div>
+                <Visualizer analyserRef={analyserRef} isPlaying={isPlaying} barCount={40} height={48} colorTop="#D4A020" colorBot="#7A4E00" />
+              </div>
+
+              {/* ── シャッフル / リピート行 ── */}
+              <div className="flex items-center justify-center gap-6 w-full">
+                <button onClick={toggleShuffle} className="flex items-center gap-1.5 transition-all active:scale-90"
                   style={{
-                    width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                    background: shuffle ? "rgba(184,128,10,0.15)" : "transparent",
-                    border: shuffle ? "1px solid rgba(184,128,10,0.4)" : "1px solid rgba(139,106,74,0.2)",
+                    padding: "6px 14px", borderRadius: 20,
+                    background: shuffle ? "rgba(184,128,10,0.15)" : "rgba(61,43,26,0.04)",
+                    border: shuffle ? "1px solid rgba(184,128,10,0.45)" : "1px solid rgba(139,106,74,0.2)",
                   }}>
-                  <IconShuffle size={16} color={shuffle ? "#B8800A" : "#8B6A4A"} active={shuffle} />
+                  <IconShuffle size={14} color={shuffle ? "#B8800A" : "#8B6A4A"} active={shuffle} />
+                  <span style={{ fontSize: 9, color: shuffle ? "#B8800A" : "#8B6A4A", letterSpacing: "0.1em", fontFamily: "var(--font-nunito), 'Nunito', sans-serif" }}>SHUFFLE</span>
                 </button>
 
-                <button onClick={prev} className="flex items-center justify-center rounded-full transition-all active:scale-90"
+                <button onClick={toggleRepeat} className="flex items-center gap-1.5 transition-all active:scale-90"
+                  style={{
+                    padding: "6px 14px", borderRadius: 20,
+                    background: repeat !== "none" ? "rgba(184,128,10,0.15)" : "rgba(61,43,26,0.04)",
+                    border: repeat !== "none" ? "1px solid rgba(184,128,10,0.45)" : "1px solid rgba(139,106,74,0.2)",
+                  }}>
+                  {repeat === "one"
+                    ? <IconRepeatOne size={14} color="#B8800A" />
+                    : <IconRepeat size={14} color={repeat !== "none" ? "#B8800A" : "#8B6A4A"} active={repeat !== "none"} />
+                  }
+                  <span style={{ fontSize: 9, color: repeat !== "none" ? "#B8800A" : "#8B6A4A", letterSpacing: "0.1em", fontFamily: "var(--font-nunito), 'Nunito', sans-serif" }}>
+                    {repeat === "one" ? "REPEAT 1" : "REPEAT"}
+                  </span>
+                </button>
+              </div>
+
+              {/* ── メインコントロール行: ◀◀ | ⏪15 | ▶ | 15⏩ | ▶▶ ── */}
+              <div className="flex items-center justify-center gap-2 w-full">
+                {/* 前の曲 */}
+                <button onClick={prev}
+                  className="flex items-center justify-center rounded-full transition-all active:scale-90"
                   style={{
                     width: 44, height: 44,
                     background: "#FFFDF5", border: "1.5px solid #C4A882",
-                    boxShadow: "0 2px 8px rgba(61,43,26,0.15)",
+                    boxShadow: "0 2px 8px rgba(61,43,26,0.12)",
                   }}>
                   <IconPrev size={18} color="#3D2B1A" />
                 </button>
 
+                {/* -15秒 */}
+                <button onClick={() => seekRelative(-15)} title="-15秒"
+                  className="flex flex-col items-center justify-center transition-all active:scale-90"
+                  style={{
+                    width: 50, height: 50, borderRadius: 12,
+                    background: "rgba(61,43,26,0.05)",
+                    border: "1.5px solid rgba(139,106,74,0.25)",
+                    gap: 2, cursor: "pointer",
+                  }}>
+                  <RotateCcw size={20} strokeWidth={1.5} color="#8B6A4A" />
+                  <span style={{ fontSize: 8, color: "#8B6A4A", fontWeight: 600, letterSpacing: "0.04em", lineHeight: 1 }}>15</span>
+                </button>
+
+                {/* 再生/一時停止（大きい） */}
                 <button onClick={isPlaying ? pause : play}
                   className="flex items-center justify-center rounded-full transition-all active:scale-90"
                   style={{
-                    width: 60, height: 60,
+                    width: 64, height: 64,
                     background: "radial-gradient(circle at 38% 35%, #F0C84A, #B8800A 55%, #8B5E00)",
-                    boxShadow: "0 4px 18px rgba(184,128,10,0.5), inset 0 1px 0 rgba(255,255,255,0.3)",
+                    boxShadow: "0 4px 20px rgba(184,128,10,0.55), inset 0 1px 0 rgba(255,255,255,0.3)",
                     border: "1.5px solid rgba(184,128,10,0.7)",
                   }}>
                   {isPlaying
-                    ? <IconPause size={22} color="#FFF9F0" />
-                    : <div style={{ marginLeft: 3 }}><IconPlay size={22} color="#FFF9F0" /></div>
+                    ? <IconPause size={24} color="#FFF9F0" />
+                    : <div style={{ marginLeft: 3 }}><IconPlay size={24} color="#FFF9F0" /></div>
                   }
                 </button>
 
-                <button onClick={next} className="flex items-center justify-center rounded-full transition-all active:scale-90"
+                {/* +15秒 */}
+                <button onClick={() => seekRelative(15)} title="+15秒"
+                  className="flex flex-col items-center justify-center transition-all active:scale-90"
+                  style={{
+                    width: 50, height: 50, borderRadius: 12,
+                    background: "rgba(61,43,26,0.05)",
+                    border: "1.5px solid rgba(139,106,74,0.25)",
+                    gap: 2, cursor: "pointer",
+                  }}>
+                  <RotateCw size={20} strokeWidth={1.5} color="#8B6A4A" />
+                  <span style={{ fontSize: 8, color: "#8B6A4A", fontWeight: 600, letterSpacing: "0.04em", lineHeight: 1 }}>15</span>
+                </button>
+
+                {/* 次の曲 */}
+                <button onClick={next}
+                  className="flex items-center justify-center rounded-full transition-all active:scale-90"
                   style={{
                     width: 44, height: 44,
                     background: "#FFFDF5", border: "1.5px solid #C4A882",
-                    boxShadow: "0 2px 8px rgba(61,43,26,0.15)",
+                    boxShadow: "0 2px 8px rgba(61,43,26,0.12)",
                   }}>
                   <IconNext size={18} color="#3D2B1A" />
-                </button>
-
-                <button onClick={toggleRepeat} className="transition-all active:scale-90"
-                  style={{
-                    width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                    background: repeat !== "none" ? "rgba(184,128,10,0.15)" : "transparent",
-                    border: repeat !== "none" ? "1px solid rgba(184,128,10,0.4)" : "1px solid rgba(139,106,74,0.2)",
-                  }}>
-                  {repeat === "one"
-                    ? <IconRepeatOne size={16} color="#B8800A" />
-                    : <IconRepeat size={16} color={repeat !== "none" ? "#B8800A" : "#8B6A4A"} active={repeat !== "none"} />
-                  }
                 </button>
               </div>
 
               {/* ── ボリューム（リデザイン） ── */}
               <VolumeControl volume={volume} onChange={changeVolume} />
-
-              {/* 仕切り */}
-              <div className="w-full flex items-center gap-2">
-                <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, #D4A020)" }} />
-                <span style={{ fontSize: 13 }}>🍦</span>
-                <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, #D4A020, transparent)" }} />
-              </div>
 
               {/* シェアボタン */}
               <div className="w-full">
@@ -659,25 +654,8 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
               </div>
             </div>
 
-            {/* ═══ 右: ビジュアライザー + プレイリスト ═══ */}
+            {/* ═══ 右: プレイリスト ═══ */}
             <div className="flex-1 flex flex-col min-w-0" ref={playlistRef}>
-
-              {/* グラフィックイコライザー */}
-              <div style={{
-                background: "linear-gradient(180deg, #3D1E0A 0%, #2A1208 100%)",
-                borderBottom: "1.5px solid #5A2E12",
-                padding: "10px 16px 8px",
-              }}>
-                <div className="flex items-center justify-between mb-1">
-                  <span style={{ fontSize: 9, color: "rgba(230,168,32,0.5)", letterSpacing: "0.2em", fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif" }}>
-                    GRAPHIC EQUALIZER
-                  </span>
-                  {isPlaying && (
-                    <span style={{ fontSize: 9, color: "#6BAF96", letterSpacing: "0.15em" }}>● LIVE</span>
-                  )}
-                </div>
-                <Visualizer analyserRef={analyserRef} isPlaying={isPlaying} barCount={52} height={60} colorTop="#D4A020" colorBot="#7A4E00" />
-              </div>
 
               {/* タブバー */}
               <div className="flex" style={{ borderBottom: "1.5px solid #E8D5B0", background: "#FFF9F0" }}>
