@@ -657,24 +657,6 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
             {/* ═══ 右: プレイリスト ═══ */}
             <div className="flex-1 flex flex-col min-w-0" ref={playlistRef}>
 
-              {/* グラフィックイコライザー */}
-              <div style={{
-                background: "linear-gradient(180deg, #3D1E0A 0%, #2A1208 100%)",
-                borderBottom: "1.5px solid #5A2E12",
-                padding: "10px 16px 8px",
-              }}>
-                <div className="flex items-center justify-between mb-1">
-                  <span style={{ fontSize: 9, color: "rgba(230,168,32,0.5)", letterSpacing: "0.2em", fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif" }}>
-                    GRAPHIC EQUALIZER
-                  </span>
-                  {isPlaying && (
-                    <span style={{ fontSize: 9, color: "#6BAF96", letterSpacing: "0.15em" }}>● LIVE</span>
-                  )}
-                </div>
-                <Visualizer analyserRef={analyserRef} isPlaying={isPlaying} barCount={52} height={60} />
-              </div>
-
-
               {/* タブバー */}
               <div className="flex" style={{ borderBottom: "1.5px solid #E8D5B0", background: "#FFF9F0" }}>
                 {(["playlist", "ranking"] as Tab[]).map((t) => (
