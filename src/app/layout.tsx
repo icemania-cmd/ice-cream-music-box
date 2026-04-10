@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { M_PLUS_Rounded_1c, Shippori_Mincho } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import RegisterSW from "@/components/RegisterSW";
+import InstallBanner from "@/components/InstallBanner";
 import "./globals.css";
 
 const mplus = M_PLUS_Rounded_1c({
@@ -64,6 +65,7 @@ export default function RootLayout({
         {children}
         <Analytics />
         <RegisterSW />
+        <InstallBanner />
       </body>
     </html>
   );

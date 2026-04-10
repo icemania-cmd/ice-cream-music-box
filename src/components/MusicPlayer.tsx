@@ -10,7 +10,7 @@ import RetroRankings from "./RetroRankings";
 import NowPlayingModal from "./NowPlayingModal";
 import Visualizer from "./Visualizer";
 import ShareButtons from "./ShareButtons";
-import InstallBanner from "./InstallBanner";
+
 import LiveListeners from "./LiveListeners";
 import {
   IconPlay, IconPause, IconNext, IconPrev,
@@ -713,9 +713,6 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
               ICE CREAM MUSIC BOXは、楽曲の歌詞の中にすべてアイスクリームに関する内容の歌だけを集めたアイスクリーム特化型ミュージックボックスです。あいぱく会場のBGMで流れているアイスクリームミュージックが気軽に楽しめます。
             </p>
           </div>
-
-          {/* ─── インストールバナー ─── */}
-          <InstallBanner />
 
           {/* ─── フッター ─── */}
           <div className="flex items-center justify-center px-5 py-3"
