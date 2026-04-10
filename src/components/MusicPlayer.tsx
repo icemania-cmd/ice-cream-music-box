@@ -351,7 +351,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
               borderBottom: "3px solid #B8800A",
             }}>
             <div className="flex items-center gap-2.5">
-              <img src="/icon-192.png" alt="ICE CREAM MUSIC BOX" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover" }} />
+              <img src="/icon-192.png" width={56} height={56} alt="Ice Cream Music Box" style={{ borderRadius: 8 }} />
               <div>
                 <h1 style={{
                   color: "#E6A820", fontSize: 13, fontWeight: 700,
