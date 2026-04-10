@@ -65,9 +65,7 @@ export default function RetroPlaylist({
               <p
                 style={{
                   color: isCurrent ? "#2A1208" : "#3D2010",
-                  fontFamily: isCurrent ? "'Shippori Mincho', serif" : "inherit",
-                  letterSpacing: isCurrent ? "0.02em" : "normal",
-                  fontSize: 14, fontWeight: isCurrent ? 700 : 400,
+                  fontSize: 14, fontWeight: 400,
                   whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 }}
               >

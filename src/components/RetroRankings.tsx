@@ -67,8 +67,7 @@ export default function RetroRankings({
               <p
                 style={{
                   color: isActive ? "#2A1208" : "#3D2010",
-                  fontFamily: isActive ? "'Shippori Mincho', serif" : "inherit",
-                  fontSize: 14, fontWeight: isActive ? 700 : 400,
+                  fontSize: 14, fontWeight: 400,
                   whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 }}
               >
