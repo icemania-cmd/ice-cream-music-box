@@ -54,7 +54,7 @@ export default function NowPlayingModal({
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-4">
         <p style={{
           color: GOLD, fontSize: 11, letterSpacing: "0.3em",
-          fontFamily: "'Shippori Mincho', serif",
+          fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
         }}>
           NOW PLAYING
         </p>
@@ -92,7 +92,7 @@ export default function NowPlayingModal({
       <div className="text-center px-8 mb-6 max-w-md w-full">
         <h2 style={{
           color: CREAM, fontSize: 22, fontWeight: 700,
-          fontFamily: "'Shippori Mincho', serif",
+          fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
           letterSpacing: "0.04em",
           lineHeight: 1.3,
           marginBottom: 4,

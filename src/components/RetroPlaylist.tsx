@@ -36,7 +36,7 @@ export default function RetroPlaylist({
                 fontSize: 11,
                 width: 20,
                 color: isCurrent ? "#C8860A" : "#B09070",
-                fontFamily: "'Shippori Mincho', serif",
+                fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
               }}
             >
               {String(idx + 1).padStart(2, "0")}
@@ -65,7 +65,9 @@ export default function RetroPlaylist({
               <p
                 style={{
                   color: isCurrent ? "#2A1208" : "#3D2010",
-                  fontSize: 14, fontWeight: 400,
+                  fontFamily: isCurrent ? "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif" : "inherit",
+                  letterSpacing: isCurrent ? "0.02em" : "normal",
+                  fontSize: 14, fontWeight: isCurrent ? 700 : 400,
                   whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 }}
               >
@@ -82,7 +84,7 @@ export default function RetroPlaylist({
               style={{
                 fontSize: 10,
                 color: isCurrent ? "#B8800A" : "#C4A882",
-                fontFamily: "'Shippori Mincho', serif",
+                fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
                 minWidth: 32,
                 textAlign: "right",
               }}

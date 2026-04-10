@@ -118,7 +118,7 @@ function VolumeControl({ volume, onChange }: { volume: number; onChange: (v: num
           </button>
           <span style={{
             fontSize: 9, color: "#8B6A4A", letterSpacing: "0.2em",
-            fontFamily: "var(--font-mplus), sans-serif",
+            fontFamily: "var(--font-nunito), var(--font-mplus), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
           }}>VOLUME</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -127,14 +127,14 @@ function VolumeControl({ volume, onChange }: { volume: number; onChange: (v: num
               fontSize: 8, padding: "1px 6px", borderRadius: 3,
               background: "rgba(214,80,118,0.12)", border: "1px solid rgba(214,80,118,0.35)",
               color: "#D65076", letterSpacing: "0.1em",
-              fontFamily: "var(--font-mplus), sans-serif",
+              fontFamily: "var(--font-nunito), var(--font-mplus), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
             }}>BOOST</span>
           )}
           <span style={{
             fontSize: 16, fontWeight: 700,
             color: isBoost ? "#D65076" : "#B8800A",
             fontVariantNumeric: "tabular-nums",
-            fontFamily: "var(--font-mplus), sans-serif",
+            fontFamily: "var(--font-nunito), var(--font-mplus), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
             textShadow: isBoost ? "0 0 10px rgba(214,80,118,0.35)" : "none",
             transition: "color 0.3s, text-shadow 0.3s",
             minWidth: 48, textAlign: "right",
@@ -194,7 +194,7 @@ function VolumeControl({ volume, onChange }: { volume: number; onChange: (v: num
           transform: "translateX(-50%)",
           fontSize: 8, color: "rgba(139,106,74,0.45)",
           letterSpacing: "0.04em",
-          fontFamily: "var(--font-mplus), sans-serif",
+          fontFamily: "var(--font-nunito), var(--font-mplus), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
           pointerEvents: "none",
         }}>100%</div>
 
@@ -246,7 +246,7 @@ function VolumeControl({ volume, onChange }: { volume: number; onChange: (v: num
                 : "#8B6A4A",
               fontSize: 10, fontWeight: active ? 700 : 400,
               letterSpacing: "0.1em",
-              fontFamily: "var(--font-mplus), sans-serif",
+              fontFamily: "var(--font-nunito), var(--font-mplus), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
               cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 3,
             }}
@@ -355,7 +355,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
               <div>
                 <h1 style={{
                   color: "#E6A820", fontSize: 13, fontWeight: 700,
-                  letterSpacing: "0.22em", fontFamily: "'Shippori Mincho', serif", lineHeight: 1.3,
+                  letterSpacing: "0.22em", fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif", lineHeight: 1.3,
                 }}>ICE CREAM<br />MUSIC BOX</h1>
                 <p style={{ color: "rgba(200,134,10,0.5)", fontSize: 9, letterSpacing: "0.18em" }}>
                   あいぱく BGMプレイヤー
@@ -373,7 +373,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                   background: "rgba(184,128,10,0.12)",
                   border: "1px solid rgba(184,128,10,0.35)",
                   borderRadius: 4, color: "#E6A820", fontSize: 10, letterSpacing: "0.08em",
-                  fontFamily: "'Shippori Mincho', serif",
+                  fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
                 }}
               >
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
@@ -391,7 +391,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                     background: "rgba(107,175,150,0.15)",
                     border: "1px solid rgba(107,175,150,0.4)",
                     borderRadius: 4, color: "#5A9E84", fontSize: 11,
-                    letterSpacing: "0.1em", fontFamily: "'Shippori Mincho', serif",
+                    letterSpacing: "0.1em", fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
                   }}
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
@@ -423,7 +423,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                   background: "rgba(184,128,10,0.15)",
                   border: "1px solid rgba(184,128,10,0.4)",
                   borderRadius: 4, color: "#E6A820", fontSize: 11,
-                  letterSpacing: "0.15em", fontFamily: "'Shippori Mincho', serif",
+                  letterSpacing: "0.15em", fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
                 }}
               >
                 <IconExpand size={12} color="#E6A820" />
@@ -484,7 +484,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                   title={track.title}
                   style={{
                     color: "#3D2B1A", fontSize: 15, fontWeight: 700,
-                    fontFamily: "'Shippori Mincho', serif", letterSpacing: "0.04em",
+                    fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif", letterSpacing: "0.04em",
                     lineHeight: 1.4, marginBottom: 2,
                     display: "block",
                   }}
@@ -649,7 +649,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                 padding: "10px 16px 8px",
               }}>
                 <div className="flex items-center justify-between mb-1">
-                  <span style={{ fontSize: 9, color: "rgba(230,168,32,0.5)", letterSpacing: "0.2em", fontFamily: "'Shippori Mincho', serif" }}>
+                  <span style={{ fontSize: 9, color: "rgba(230,168,32,0.5)", letterSpacing: "0.2em", fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif" }}>
                     GRAPHIC EQUALIZER
                   </span>
                   {isPlaying && (
@@ -668,7 +668,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
                       color: tab === t ? "#B8800A" : "#8B6A4A",
                       borderBottom: tab === t ? "2.5px solid #B8800A" : "2.5px solid transparent",
                       background: "transparent", fontWeight: tab === t ? 700 : 400,
-                      fontFamily: "'Shippori Mincho', serif", letterSpacing: "0.1em",
+                      fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif", letterSpacing: "0.1em",
                     }}>
                     {t === "playlist"
                       ? <><IconList size={13} color={tab === t ? "#B8800A" : "#8B6A4A"} /> プレイリスト</>
@@ -701,7 +701,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
               <div style={{ flex: 0, width: 2, height: 16, background: "#B8800A", borderRadius: 1 }} />
               <h3 style={{
                 color: "#B8800A", fontSize: 11, fontWeight: 700,
-                letterSpacing: "0.2em", fontFamily: "'Shippori Mincho', serif",
+                letterSpacing: "0.2em", fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
               }}>
                 ICE CREAM MUSIC BOX とは
               </h3>
@@ -722,7 +722,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
             }}>
             <p style={{
               color: "rgba(230,168,32,0.55)", fontSize: 10,
-              fontFamily: "'Shippori Mincho', serif", letterSpacing: "0.2em",
+              fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif", letterSpacing: "0.2em",
             }}>
               🍦 ICECREAM MUSIC by あいぱく®
             </p>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { M_PLUS_Rounded_1c, Shippori_Mincho } from "next/font/google";
+import { M_PLUS_Rounded_1c, Nunito } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import RegisterSW from "@/components/RegisterSW";
 import InstallBanner from "@/components/InstallBanner";
@@ -12,10 +12,10 @@ const mplus = M_PLUS_Rounded_1c({
   display: "swap",
 });
 
-const shippori = Shippori_Mincho({
-  weight: ["400", "500", "700", "800"],
+const nunito = Nunito({
+  weight: ["400", "500", "600", "700", "800"],
   subsets: ["latin"],
-  variable: "--font-shippori",
+  variable: "--font-nunito",
   display: "swap",
 });
 
@@ -55,7 +55,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={`${mplus.variable} ${shippori.variable} h-full`}>
+    <html lang="ja" className={`${mplus.variable} ${nunito.variable} h-full`}>
       <head>
         {/* beforeinstallprompt を React hydration より前にキャプチャ */}
         <script
@@ -67,7 +67,7 @@ export default function RootLayout({
       <body
         className="min-h-full flex flex-col"
         style={{
-          fontFamily: "var(--font-mplus), 'M PLUS Rounded 1c', sans-serif",
+          fontFamily: "var(--font-nunito), var(--font-mplus), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
         }}
       >
         {children}

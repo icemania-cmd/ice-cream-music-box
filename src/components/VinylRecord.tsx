@@ -102,7 +102,7 @@ export default function VinylRecord({ track, isPlaying, size = 240, onClick }: P
         {/* AIPAKU */}
         <text x={cx} y={cy - r * 0.13}
           textAnchor="middle" fill="rgba(255,255,255,0.92)"
-          fontSize={r * 0.09} fontFamily="Georgia, serif"
+          fontSize={r * 0.09} fontFamily="Nunito, 'M PLUS Rounded 1c', sans-serif"
           fontWeight="bold" letterSpacing="3">
           AIPAKU
         </text>
@@ -110,14 +110,14 @@ export default function VinylRecord({ track, isPlaying, size = 240, onClick }: P
         {/* 曲名 */}
         <text x={cx} y={cy + r * 0.01}
           textAnchor="middle" fill="rgba(255,255,255,0.78)"
-          fontSize={r * 0.062} fontFamily="sans-serif">
+          fontSize={r * 0.062} fontFamily="Nunito, 'M PLUS Rounded 1c', sans-serif">
           {track.title.length > 13 ? track.title.slice(0, 12) + "…" : track.title}
         </text>
 
         {/* A面 */}
         <text x={cx} y={cy + r * 0.135}
           textAnchor="middle" fill="rgba(255,255,255,0.55)"
-          fontSize={r * 0.055} fontFamily="Georgia, serif">
+          fontSize={r * 0.055} fontFamily="Nunito, 'M PLUS Rounded 1c', sans-serif">
           &#x2015; A面 &#x2015;
         </text>
 

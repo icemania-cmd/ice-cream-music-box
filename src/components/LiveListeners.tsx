@@ -63,7 +63,7 @@ export default function LiveListeners() {
         color: "#8B6A4A",
         fontSize: 11,
         letterSpacing: "0.08em",
-        fontFamily: "'Shippori Mincho', serif",
+        fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
       }}>
         いま <strong style={{ color: "#B8800A", fontSize: 13 }}>{count}</strong> 名がアイスクリームミュージックを再生中
       </p>

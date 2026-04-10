@@ -47,7 +47,7 @@ export default function RetroRankings({
                 <span style={{
                   fontSize: 12,
                   color: isActive ? "#C8860A" : "#B09070",
-                  fontFamily: "'Shippori Mincho', serif",
+                  fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
                 }}>
                   {rank + 1}
                 </span>
@@ -67,7 +67,8 @@ export default function RetroRankings({
               <p
                 style={{
                   color: isActive ? "#2A1208" : "#3D2010",
-                  fontSize: 14, fontWeight: 400,
+                  fontFamily: isActive ? "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif" : "inherit",
+                  fontSize: 14, fontWeight: isActive ? 700 : 400,
                   whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 }}
               >

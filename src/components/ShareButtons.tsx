@@ -90,7 +90,7 @@ export default function ShareButtons({ track }: Props) {
         color: "#8B6A4A",
         letterSpacing: "0.2em",
         textAlign: "center",
-        fontFamily: "'Shippori Mincho', serif",
+        fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
         opacity: 0.7,
       }}>
         ― SHARE ―
