@@ -85,16 +85,22 @@ export default function ShareButtons({ track }: Props) {
   return (
     <div className="flex flex-col gap-2 w-full">
       {/* ラベル */}
-      <p style={{
-        fontSize: 9,
-        color: "#8B6A4A",
-        letterSpacing: "0.2em",
-        textAlign: "center",
-        fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
-        opacity: 0.7,
-      }}>
-        ― SHARE ―
-      </p>
+      <div className="flex items-center justify-center gap-1.5">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8B6A4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity={0.7}>
+          <path d="M9 18V5l12-2v13" />
+          <circle cx="6" cy="18" r="3" />
+          <circle cx="18" cy="16" r="3" />
+        </svg>
+        <p style={{
+          fontSize: 9,
+          color: "#8B6A4A",
+          letterSpacing: "0.2em",
+          fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
+          opacity: 0.7,
+        }}>
+          この曲をシェア
+        </p>
+      </div>
 
       {/* ボタン列 */}
       <div className="flex gap-2 justify-center">
