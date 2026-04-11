@@ -28,8 +28,9 @@ const CONCURRENCY = 3;
 
 // プレイリストから除外するファイル名（R2には残るが曲一覧に表示しない）
 const EXCLUDED_FILES = [
-  "ONIUMA ICECREAM.wav",   // v5.5に差し替え済み
-  "icecream holic.wav",    // v5.5に差し替え済み
+  "ONIUMA ICECREAM.wav",      // v5.5に差し替え済み
+  "icecream holic.wav",       // v5.5に差し替え済み
+  "Ice cream paradise.wav",   // v5.5に差し替え済み
 ];
 
 // プレイリスト先頭に固定表示するファイル名（順番通りに先頭へ）
@@ -150,9 +151,14 @@ async function main() {
     console.log(`🚫 除外ファイル: ${EXCLUDED_FILES.join(", ")}\n`);
   }
 
-  // PINNED_TRACKSを先頭に、残りをアルファベット順でソート
+  // PINNED_TRACKSを先頭に、残りをランダム順でシャッフル
   const pinned = PINNED_TRACKS.filter(f => wavFiles.includes(f));
   const rest = wavFiles.filter(f => !PINNED_TRACKS.includes(f));
+  // Fisher-Yatesシャッフル
+  for (let i = rest.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [rest[i], rest[j]] = [rest[j], rest[i]];
+  }
   const sortedFiles = [...pinned, ...rest];
 
   if (pinned.length > 0) {
