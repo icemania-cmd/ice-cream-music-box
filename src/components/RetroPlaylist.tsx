@@ -274,11 +274,12 @@ export default function RetroPlaylist({
           {Array.from({ length: totalPages }, (_, i) => {
             const isActive = i === page;
             const showBtn =
+              totalPages <= 5 ||
               i === 0 ||
               i === totalPages - 1 ||
               Math.abs(i - page) <= 1;
-            const showEllipsisBefore = i === 1 && page > 2;
-            const showEllipsisAfter = i === totalPages - 2 && page < totalPages - 3;
+            const showEllipsisBefore = totalPages > 5 && i === 1 && page > 2;
+            const showEllipsisAfter = totalPages > 5 && i === totalPages - 2 && page < totalPages - 3;
 
             if (!showBtn) return null;
 
