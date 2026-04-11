@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Track } from "@/lib/tracks";
 import { useAudioEngine } from "@/hooks/useAudioEngine";
 import { useMediaSession } from "@/hooks/useMediaSession";
@@ -284,6 +284,27 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
   } = engine;
 
   const elapsed = progress * duration;
+
+  // 起動時: URLの ?track=<id> を読んで該当曲を選択
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const trackId = params.get("track");
+    if (!trackId) return;
+    const idx = trackList.findIndex((t) => String(t.id) === trackId);
+    if (idx >= 0 && idx !== currentIndex) {
+      selectTrack(idx);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // マウント時1回のみ
+
+  // 再生中の曲が変わったらURLを更新（ブラウザ履歴には残さない）
+  useEffect(() => {
+    if (typeof window === "undefined" || !track) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("track", String(track.id));
+    window.history.replaceState(null, "", url.toString());
+  }, [track]);
 
   // 秒単位でシーク（±15秒など）
   const seekRelative = useCallback((delta: number) => {

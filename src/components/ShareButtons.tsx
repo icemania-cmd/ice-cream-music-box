@@ -47,8 +47,8 @@ export default function ShareButtons({ track }: Props) {
   const [copied, setCopied] = useState(false);
 
   const shareUrl = typeof window !== "undefined"
-    ? window.location.origin   // ドメインのみ（パスは含まない）
-    : "https://www.ice-mbox.fun";
+    ? `${window.location.origin}/?track=${track.id}`
+    : `https://www.ice-mbox.fun/?track=${track.id}`;
   const text = `🍦 いま「${track.title}」を聴いています！\n#あいぱく #アイスクリーム\n${shareUrl}`;
 
   // X (Twitter) シェア
