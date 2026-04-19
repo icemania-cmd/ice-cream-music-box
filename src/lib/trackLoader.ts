@@ -70,6 +70,7 @@ export function loadTracksFromFolder(): Track[] {
       plays:  m.plays  ?? 0,
       color:  m.color  ?? colorFromFilename(filename),
       filename,
+      gain:   m.gain   ?? 1.0,
     };
   });
 }

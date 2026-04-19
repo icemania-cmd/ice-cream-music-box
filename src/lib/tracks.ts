@@ -6,6 +6,7 @@ export type Track = {
   plays: number;
   color: string;
   filename: string; // 音声ファイル名
+  gain: number; // RMS正規化係数 (基準: -16dBFS)
 };
 
 export const tracks: Track[] = [
@@ -17,6 +18,7 @@ export const tracks: Track[] = [
     plays: 6430,
     color: "#D65076",
     filename: "Welcome to Aipaku.mp3",
+    gain: 1.32,
   },
   {
     id: 2,
@@ -26,6 +28,7 @@ export const tracks: Track[] = [
     plays: 5120,
     color: "#5DB89A",
     filename: "Ice Cream Wonderland.mp3",
+    gain: 1.48,
   },
   {
     id: 3,
@@ -35,6 +38,7 @@ export const tracks: Track[] = [
     plays: 4780,
     color: "#E8A0BF",
     filename: "アイ・アイ・I LOVE ICE CREAM.mp3",
+    gain: 1.75,
   },
   {
     id: 4,
@@ -44,6 +48,7 @@ export const tracks: Track[] = [
     plays: 4210,
     color: "#FFB347",
     filename: "おいしい呪文.mp3",
+    gain: 0.32,
   },
   {
     id: 5,
@@ -53,6 +58,7 @@ export const tracks: Track[] = [
     plays: 3842,
     color: "#6A8FC9",
     filename: "Ice Cream Syndrome.mp3",
+    gain: 1.25,
   },
   {
     id: 6,
@@ -62,6 +68,7 @@ export const tracks: Track[] = [
     plays: 3760,
     color: "#FF8C94",
     filename: "icecream holic.mp3",
+    gain: 1.26,
   },
   {
     id: 7,
@@ -71,6 +78,7 @@ export const tracks: Track[] = [
     plays: 3300,
     color: "#B8A9C9",
     filename: "Melting in our hearts.mp3",
+    gain: 0.32,
   },
   {
     id: 8,
@@ -80,6 +88,7 @@ export const tracks: Track[] = [
     plays: 3100,
     color: "#F5A623",
     filename: "8月の花火と君とアイス (Remastered_v4.5).mp3",
+    gain: 1.29,
   },
   {
     id: 9,
@@ -89,6 +98,7 @@ export const tracks: Track[] = [
     plays: 2971,
     color: "#5DB89A",
     filename: "チョコミン党(V5).mp3",
+    gain: 1.55,
   },
   {
     id: 10,
@@ -98,6 +108,7 @@ export const tracks: Track[] = [
     plays: 2840,
     color: "#E55B4D",
     filename: "Heat Shock ～溶けない約束～(v5).mp3",
+    gain: 1.30,
   },
   {
     id: 11,
@@ -107,6 +118,7 @@ export const tracks: Track[] = [
     plays: 2750,
     color: "#FFD700",
     filename: "Scoop Me Up.mp3",
+    gain: 1.65,
   },
   {
     id: 12,
@@ -116,6 +128,7 @@ export const tracks: Track[] = [
     plays: 2640,
     color: "#7B68EE",
     filename: "Ice Cream Virtual City（v5）.mp3",
+    gain: 1.20,
   },
   {
     id: 13,
@@ -125,6 +138,7 @@ export const tracks: Track[] = [
     plays: 2540,
     color: "#D2691E",
     filename: "flavor forever.mp3",
+    gain: 1.25,
   },
   {
     id: 14,
@@ -134,6 +148,7 @@ export const tracks: Track[] = [
     plays: 2480,
     color: "#FF69B4",
     filename: "La La La Love ice cream.mp3",
+    gain: 1.06,
   },
   {
     id: 15,
@@ -143,6 +158,7 @@ export const tracks: Track[] = [
     plays: 2350,
     color: "#F4A460",
     filename: "アイスクリームと黄昏の街（v5）.mp3",
+    gain: 0.99,
   },
   {
     id: 16,
@@ -152,6 +168,7 @@ export const tracks: Track[] = [
     plays: 2200,
     color: "#87CEEB",
     filename: "I am ice cream（she-v5）.mp3",
+    gain: 1.24,
   },
   {
     id: 17,
@@ -161,6 +178,7 @@ export const tracks: Track[] = [
     plays: 2100,
     color: "#708090",
     filename: "Foolish man.mp3",
+    gain: 1.25,
   },
   {
     id: 18,
@@ -170,6 +188,7 @@ export const tracks: Track[] = [
     plays: 2050,
     color: "#98FB98",
     filename: "Ice cream paradise.mp3",
+    gain: 1.07,
   },
   {
     id: 19,
@@ -179,6 +198,7 @@ export const tracks: Track[] = [
     plays: 1980,
     color: "#B0E0E6",
     filename: "Glorious Winter Ice.mp3",
+    gain: 1.74,
   },
   {
     id: 20,
@@ -188,6 +208,7 @@ export const tracks: Track[] = [
     plays: 1920,
     color: "#FFA07A",
     filename: "アイスクリームくっそ食べたい（V5）.mp3",
+    gain: 1.13,
   },
   {
     id: 21,
@@ -197,6 +218,7 @@ export const tracks: Track[] = [
     plays: 1890,
     color: "#FF6347",
     filename: "Hurry! Hurry! Hurry! .mp3",
+    gain: 1.25,
   },
   {
     id: 22,
@@ -206,6 +228,7 @@ export const tracks: Track[] = [
     plays: 1860,
     color: "#DDA0DD",
     filename: "Ice Cream and One Story(V5).mp3",
+    gain: 1.39,
   },
   {
     id: 23,
@@ -215,6 +238,7 @@ export const tracks: Track[] = [
     plays: 1820,
     color: "#D65076",
     filename: "アイスクリーム総選挙.mp3",
+    gain: 1.32,
   },
   {
     id: 24,
@@ -224,6 +248,7 @@ export const tracks: Track[] = [
     plays: 1750,
     color: "#20B2AA",
     filename: "3秒ルール.mp3",
+    gain: 1.06,
   },
   {
     id: 25,
@@ -233,6 +258,7 @@ export const tracks: Track[] = [
     plays: 1700,
     color: "#9370DB",
     filename: "アイスだらけのcameraroll.mp3",
+    gain: 0.98,
   },
   {
     id: 26,
@@ -242,6 +268,7 @@ export const tracks: Track[] = [
     plays: 1650,
     color: "#F5DEB3",
     filename: "クラフトソフトクリーム.mp3",
+    gain: 0.97,
   },
   {
     id: 27,
@@ -251,6 +278,7 @@ export const tracks: Track[] = [
     plays: 1600,
     color: "#4682B4",
     filename: "ペンギンの告白 -Ice Cream Love-.mp3",
+    gain: 1.30,
   },
   {
     id: 28,
@@ -260,6 +288,7 @@ export const tracks: Track[] = [
     plays: 1560,
     color: "#CD853F",
     filename: "アイス食べさせてクレメンス.mp3",
+    gain: 2.07,
   },
   {
     id: 29,
@@ -269,6 +298,7 @@ export const tracks: Track[] = [
     plays: 1520,
     color: "#5DB89A",
     filename: "一日くらい大丈夫（V5）.mp3",
+    gain: 1.15,
   },
   {
     id: 30,
@@ -278,6 +308,7 @@ export const tracks: Track[] = [
     plays: 1480,
     color: "#B22222",
     filename: "アイスクリームの恨みは怖いのよ (V5).mp3",
+    gain: 1.14,
   },
   {
     id: 31,
@@ -287,6 +318,7 @@ export const tracks: Track[] = [
     plays: 1440,
     color: "#DAA520",
     filename: "思い出のアイスキャンディー.mp3",
+    gain: 1.19,
   },
   {
     id: 32,
@@ -296,6 +328,7 @@ export const tracks: Track[] = [
     plays: 1400,
     color: "#708090",
     filename: "レイガシノミチ.mp3",
+    gain: 1.44,
   },
   {
     id: 33,
@@ -305,15 +338,15 @@ export const tracks: Track[] = [
     plays: 1360,
     color: "#87CEEB",
     filename: "僕は冬のアイスです.mp3",
+    gain: 0.96,
   },
 ];
 
 export const getRanking = (): Track[] =>
   [...tracks].sort((a, b) => b.plays - a.plays);
 
-// 本番はR2直接URL（プロキシなし）、開発は /api/audio/ 経由
-export const getAudioUrl = (filename: string): string => {
-  const r2Base = process.env.NEXT_PUBLIC_R2_URL;
-  if (r2Base) return `${r2Base}/audio/${encodeURIComponent(filename)}`;
-  return `/api/audio/${encodeURIComponent(filename)}`;
-};
+// 本番・開発ともに /api/audio/ 経由でストリーム
+// 本番: APIルートがR2からプロキシ（CORSヘッダー付与）
+// 開発: APIルートがローカルファイルを直接ストリーム
+export const getAudioUrl = (filename: string): string =>
+  `/api/audio/${encodeURIComponent(filename)}`;
