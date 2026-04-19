@@ -30,7 +30,7 @@ function colorFromFilename(filename: string): string {
 /** ファイル名から人間が読みやすいタイトルを生成 */
 function titleFromFilename(filename: string): string {
   return filename
-    .replace(/\.wav$/i, "")
+    .replace(/\.(wav|mp3)$/i, "")
     .replace(/\s*\([Vv]\d+(\.\d+)?\)/g, "")         // (V5), (v4.5) 等
     .replace(/\s*\(Remastered[^)]*\)/gi, "")          // (Remastered_v4.5) 等
     .replace(/\s*\(Re-Recording[^)]*\)/gi, "")        // (Re-Recording_v4) 等

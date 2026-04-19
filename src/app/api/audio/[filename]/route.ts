@@ -60,7 +60,7 @@ export async function GET(
   const rangeHeader = req.headers.get("range");
 
   const headers: Record<string, string> = {
-    "Content-Type": "audio/mpeg",
+    "Content-Type": "audio/wav",
     "Accept-Ranges": "bytes",
     "Cache-Control": "public, max-age=3600",
     "Access-Control-Allow-Origin": "*",
