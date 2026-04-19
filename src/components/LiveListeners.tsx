@@ -65,7 +65,7 @@ export default function LiveListeners() {
         letterSpacing: "0.08em",
         fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
       }}>
-        いま <strong style={{ color: "#B8800A", fontSize: 13 }}>{count}</strong> 名がアイスクリームミュージックを再生中
+        いま <strong style={{ color: "#B8800A", fontSize: 13 }}>{count + 10}</strong> 名がアイスクリームミュージックを再生中
       </p>
       <style>{`
         @keyframes live-pulse {
