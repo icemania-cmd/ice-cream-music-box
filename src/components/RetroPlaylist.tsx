@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, ChevronLeft, ChevronRight, X, Heart } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, X, Heart, Play } from "lucide-react";
 import { Track } from "@/lib/tracks";
 
 const PAGE_SIZE = 10;
@@ -215,24 +215,39 @@ export default function RetroPlaylist({
                   >
                     {t.title}
                   </p>
-                  <p style={{ color: "#9B7A58", fontSize: 10, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {t.genre}
-                  </p>
-                </div>
 
-                {/* いいね数 */}
-                <span
-                  className="tabular-nums flex-shrink-0"
-                  style={{
-                    fontSize: 11,
-                    color: likedByMe.has(t.id) ? BRAND : "#B09070",
-                    fontFamily: FONT,
-                    minWidth: 18,
-                    textAlign: "right",
-                  }}
-                >
-                  {rankingData[t.id]?.likes ?? 0}
-                </span>
+                  {/* ジャンル + いいね数 + 再生数 */}
+                  <div className="flex items-center gap-2 mt-0.5" style={{ minWidth: 0 }}>
+                    <span style={{
+                      color: "#9B7A58", fontSize: 10,
+                      whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                      flexShrink: 1, minWidth: 0,
+                    }}>
+                      {t.genre}
+                    </span>
+                    <span className="flex items-center gap-0.5 tabular-nums flex-shrink-0"
+                      style={{
+                        fontSize: 11,
+                        color: likedByMe.has(t.id) ? BRAND : "#B09070",
+                        fontFamily: FONT,
+                      }}
+                    >
+                      <Heart
+                        size={10}
+                        fill={likedByMe.has(t.id) ? BRAND : "none"}
+                        color={likedByMe.has(t.id) ? BRAND : "#B09070"}
+                        strokeWidth={2}
+                      />
+                      {rankingData[t.id]?.likes ?? 0}
+                    </span>
+                    <span className="flex items-center gap-0.5 tabular-nums flex-shrink-0"
+                      style={{ fontSize: 11, color: "#B09070", fontFamily: FONT }}
+                    >
+                      <Play size={9} fill="#B09070" color="#B09070" />
+                      {rankingData[t.id]?.plays ?? 0}
+                    </span>
+                  </div>
+                </div>
 
                 {/* いいねボタン */}
                 <button

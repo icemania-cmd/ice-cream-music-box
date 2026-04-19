@@ -13,7 +13,6 @@ import ShareButtons from "./ShareButtons";
 import AppShareButtons from "./AppShareButtons";
 
 import LiveListeners from "./LiveListeners";
-import TotalLikes from "./TotalLikes";
 import {
   IconPlay, IconPause, IconNext, IconPrev,
   IconShuffle, IconRepeat, IconRepeatOne,
@@ -522,9 +521,6 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
 
           {/* ─── リアルタイムリスナー数 ─── */}
           <LiveListeners />
-
-          {/* ─── 累計いいね数 ─── */}
-          <TotalLikes rankingData={rankingData} />
 
           {/* ─── フルワイド ターンテーブルセクション ─── */}
           <div style={{
