@@ -1,13 +1,22 @@
 import { NextResponse } from "next/server";
 import { isRedisConfigured, redisPipeline } from "@/lib/redis";
-import { tracks } from "@/lib/tracks";
+import { loadTracksServer } from "@/lib/trackLoader";
+
+// 常に最新Redisデータを返す（ISRやEdgeキャッシュを許可しない）
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
+  // 本番R2 / 開発ローカルから動的に取得（静的tracks.tsだとid 34以降が欠落する）
+  const tracks = await loadTracksServer();
+
   if (!isRedisConfigured()) {
     const empty = Object.fromEntries(
       tracks.map((t) => [t.id, { likes: 0, plays: 0, score: 0 }])
     );
-    return NextResponse.json(empty);
+    return NextResponse.json(empty, {
+      headers: { "Cache-Control": "no-store, max-age=0" },
+    });
   }
 
   try {
@@ -23,11 +32,15 @@ export async function GET() {
       data[t.id] = { likes, plays, score: likes * 5 + plays };
     });
 
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: { "Cache-Control": "no-store, max-age=0" },
+    });
   } catch {
     const empty = Object.fromEntries(
       tracks.map((t) => [t.id, { likes: 0, plays: 0, score: 0 }])
     );
-    return NextResponse.json(empty);
+    return NextResponse.json(empty, {
+      headers: { "Cache-Control": "no-store, max-age=0" },
+    });
   }
 }

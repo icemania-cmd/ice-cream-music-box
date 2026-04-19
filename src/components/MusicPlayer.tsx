@@ -313,7 +313,8 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
 
   // マウント時: ランキングデータ取得 + localStorageからいいね済みリスト読込
   useEffect(() => {
-    fetch("/api/rankings")
+    // cache: "no-store" でブラウザ/プロキシキャッシュを無効化（常に最新Redisデータを取得）
+    fetch("/api/rankings", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => setRankingData(data))
       .catch(() => {});
