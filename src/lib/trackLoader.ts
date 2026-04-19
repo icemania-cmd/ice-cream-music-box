@@ -100,10 +100,10 @@ export async function loadTracksServer(): Promise<Track[]> {
   const r2Base = process.env.NEXT_PUBLIC_R2_URL;
 
   if (r2Base) {
-    // 本番環境: R2の公開URLからトラックリストを取得
+    // 本番環境: R2の公開URLからトラックリストを取得（60秒キャッシュ）
     try {
       const res = await fetch(`${r2Base}/tracks.json`, {
-        cache: "no-store", // 常に最新のトラック順を取得（PINNED_TRACKS対応）
+        next: { revalidate: 60 },
       });
       if (!res.ok) {
         console.error("R2 tracks.json fetch failed:", res.status);

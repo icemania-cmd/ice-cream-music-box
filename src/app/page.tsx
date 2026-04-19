@@ -1,9 +1,9 @@
 import { loadTracksServer } from "@/lib/trackLoader";
 import MusicPlayer from "@/components/MusicPlayer";
 
-// 毎リクエストごとにR2から最新のtracks.jsonを取得（SSRキャッシュ無効化）
-// → リロード時もPINNED_TRACKS順が正しく反映される
-export const dynamic = "force-dynamic";
+// ISR: 60秒キャッシュ + バックグラウンド再生成（高速化のため）
+// PINNED_TRACKS順の更新は最大60秒で反映される
+export const revalidate = 60;
 
 // サーバーコンポーネント: 環境に応じてR2またはローカルから曲リストを取得
 export default async function Home() {
