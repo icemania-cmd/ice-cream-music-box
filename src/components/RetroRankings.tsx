@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Heart, Play } from "lucide-react";
 import { Track } from "@/lib/tracks";
 
@@ -17,27 +16,17 @@ type Props = {
   allTracks: Track[];
   rankingData: Record<number, RankEntry>;
   likedByMe: Set<number>;
-  onToggleLike: (trackId: number) => void;
 };
 
 export default function RetroRankings({
   tracks, currentTrackId, onSelect, allTracks,
-  rankingData, likedByMe, onToggleLike,
+  rankingData, likedByMe,
 }: Props) {
-  const [animating, setAnimating] = useState<number | null>(null);
-
   const ranked = [...tracks].sort(
     (a, b) => (rankingData[b.id]?.score ?? 0) - (rankingData[a.id]?.score ?? 0)
   );
 
   const medals = ["🥇", "🥈", "🥉"];
-
-  const handleLike = (e: React.MouseEvent, trackId: number) => {
-    e.stopPropagation();
-    setAnimating(trackId);
-    onToggleLike(trackId);
-    setTimeout(() => setAnimating(null), 300);
-  };
 
   return (
     <div className="playlist-scroll">
@@ -46,7 +35,6 @@ export default function RetroRankings({
         const isActive = t.id === currentTrackId;
         const liked = likedByMe.has(t.id);
         const trackIdx = allTracks.findIndex((tr) => tr.id === t.id);
-        const isAnimating = animating === t.id;
 
         return (
           <button
@@ -100,37 +88,16 @@ export default function RetroRankings({
 
               {/* いいね数 + 再生数 */}
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="flex items-center gap-0.5" style={{ fontSize: 11, color: liked ? BRAND : "#B09070", fontFamily: FONT }}>
+                <span className="flex items-center gap-0.5 tabular-nums" style={{ fontSize: 11, color: liked ? BRAND : "#B09070", fontFamily: FONT }}>
                   <Heart size={10} fill={liked ? BRAND : "none"} color={liked ? BRAND : "#B09070"} strokeWidth={2} />
                   {entry.likes}
                 </span>
-                <span className="flex items-center gap-0.5" style={{ fontSize: 11, color: "#B09070", fontFamily: FONT }}>
+                <span className="flex items-center gap-0.5 tabular-nums" style={{ fontSize: 11, color: "#B09070", fontFamily: FONT }}>
                   <Play size={9} fill="#B09070" color="#B09070" />
                   {entry.plays}
                 </span>
               </div>
             </div>
-
-            {/* いいねボタン */}
-            <button
-              onClick={(e) => handleLike(e, t.id)}
-              className="flex-shrink-0 flex items-center justify-center rounded-full transition-all"
-              style={{
-                width: 32,
-                height: 32,
-                transform: isAnimating ? "scale(1.35)" : "scale(1)",
-                transition: "transform 0.2s cubic-bezier(0.34,1.56,0.64,1)",
-                background: liked ? "#FEE8EF" : "transparent",
-              }}
-              aria-label={liked ? "いいねを取り消す" : "いいねする"}
-            >
-              <Heart
-                size={15}
-                fill={liked ? BRAND : "none"}
-                color={liked ? BRAND : "#C8A888"}
-                strokeWidth={2}
-              />
-            </button>
           </button>
         );
       })}
