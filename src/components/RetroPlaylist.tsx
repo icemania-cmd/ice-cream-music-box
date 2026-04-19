@@ -9,6 +9,8 @@ const PAGE_SIZE = 10;
 const FONT = "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif";
 const BRAND = "#D65076";
 
+type RankEntry = { likes: number; plays: number; score: number };
+
 type Props = {
   tracks: Track[];
   currentIndex: number;
@@ -17,11 +19,12 @@ type Props = {
   onSelect: (idx: number) => void;
   likedByMe: Set<number>;
   onToggleLike: (trackId: number) => void;
+  rankingData: Record<number, RankEntry>;
 };
 
 export default function RetroPlaylist({
   tracks, currentIndex, isPlaying, playCounts, onSelect,
-  likedByMe, onToggleLike,
+  likedByMe, onToggleLike, rankingData,
 }: Props) {
   const [query, setQuery] = useState("");
   const [likeAnimating, setLikeAnimating] = useState<number | null>(null);
@@ -216,6 +219,20 @@ export default function RetroPlaylist({
                     {t.genre}
                   </p>
                 </div>
+
+                {/* いいね数 */}
+                <span
+                  className="tabular-nums flex-shrink-0"
+                  style={{
+                    fontSize: 11,
+                    color: likedByMe.has(t.id) ? BRAND : "#B09070",
+                    fontFamily: FONT,
+                    minWidth: 18,
+                    textAlign: "right",
+                  }}
+                >
+                  {rankingData[t.id]?.likes ?? 0}
+                </span>
 
                 {/* いいねボタン */}
                 <button

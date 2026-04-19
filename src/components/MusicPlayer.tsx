@@ -772,7 +772,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
               {/* リスト */}
               <div style={{ background: "#FFFDF8", flex: 1 }}>
                 {tab === "playlist"
-                  ? <RetroPlaylist tracks={trackList} currentIndex={currentIndex} isPlaying={isPlaying} playCounts={playCounts} onSelect={selectTrack} likedByMe={likedByMe} onToggleLike={toggleLike} />
+                  ? <RetroPlaylist tracks={trackList} currentIndex={currentIndex} isPlaying={isPlaying} playCounts={playCounts} onSelect={selectTrack} likedByMe={likedByMe} onToggleLike={toggleLike} rankingData={rankingData} />
                   : <RetroRankings tracks={trackList} playCounts={playCounts} currentTrackId={track.id} onSelect={selectTrack} allTracks={trackList} rankingData={rankingData} likedByMe={likedByMe} onToggleLike={toggleLike} />
                 }
               </div>
