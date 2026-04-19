@@ -1,22 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const REDIS_URL   = process.env.UPSTASH_REDIS_REST_URL;
-const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
-
-/** Upstash Redis REST API を呼ぶ薄いラッパー */
-async function redis<T = unknown>(command: unknown[]): Promise<T> {
-  const res = await fetch(REDIS_URL!, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${REDIS_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(command),
-    cache: "no-store",
-  });
-  const json = await res.json();
-  return json.result as T;
-}
+import { redis, isRedisConfigured } from "@/lib/redis";
 
 /**
  * Sorted Set "listeners" を使って現在の接続数を管理する
@@ -32,7 +15,7 @@ async function getCurrentCount(): Promise<number> {
 
 /** GET: 現在のリスナー数を返す */
 export async function GET() {
-  if (!REDIS_URL || !REDIS_TOKEN) {
+  if (!isRedisConfigured()) {
     return NextResponse.json({ count: 0 });
   }
   try {
@@ -45,7 +28,7 @@ export async function GET() {
 
 /** POST: セッションの生存確認（30秒ごとにクライアントから送信） */
 export async function POST(req: NextRequest) {
-  if (!REDIS_URL || !REDIS_TOKEN) {
+  if (!isRedisConfigured()) {
     return NextResponse.json({ count: 0 });
   }
   try {
