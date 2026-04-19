@@ -275,6 +275,11 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
   const [reloading, setReloading] = useState(false);
   const [reloadMsg, setReloadMsg] = useState<string | null>(null);
   const playlistRef = useRef<HTMLDivElement>(null);
+  const [rankingData, setRankingData] = useState<
+    Record<number, { likes: number; plays: number; score: number }>
+  >({});
+  const [likedByMe, setLikedByMe] = useState<Set<number>>(new Set());
+  const lastPlayedIdRef = useRef<number | null>(null);
 
   const {
     track, tracks: trackList, currentIndex, isPlaying,
@@ -306,6 +311,28 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
     window.history.replaceState(null, "", url.toString());
   }, [track]);
 
+  // マウント時: ランキングデータ取得 + localStorageからいいね済みリスト読込
+  useEffect(() => {
+    fetch("/api/rankings")
+      .then((r) => r.json())
+      .then((data) => setRankingData(data))
+      .catch(() => {});
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem("mbox:liked") ?? "[]"
+      ) as number[];
+      setLikedByMe(new Set(stored));
+    } catch {}
+  }, []);
+
+  // 再生カウント: セッション内で同じ曲の重複を防ぐ
+  useEffect(() => {
+    if (!isPlaying || !track) return;
+    if (track.id === lastPlayedIdRef.current) return;
+    lastPlayedIdRef.current = track.id;
+    fetch(`/api/play/${track.id}`, { method: "POST" }).catch(() => {});
+  }, [track?.id, isPlaying]);
+
   // 秒単位でシーク（±15秒など）
   const seekRelative = useCallback((delta: number) => {
     if (!duration) return;
@@ -335,6 +362,43 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
       setTimeout(() => setReloadMsg(null), 3000);
     }
   }, [reloadTracks]);
+
+  const toggleLike = useCallback(
+    (trackId: number) => {
+      const wasLiked = likedByMe.has(trackId);
+      setLikedByMe((prev) => {
+        const next = new Set(prev);
+        wasLiked ? next.delete(trackId) : next.add(trackId);
+        return next;
+      });
+      setRankingData((prev) => {
+        const entry = prev[trackId] ?? { likes: 0, plays: 0, score: 0 };
+        const likes = Math.max(0, entry.likes + (wasLiked ? -1 : 1));
+        return { ...prev, [trackId]: { ...entry, likes, score: likes * 5 + entry.plays } };
+      });
+      try {
+        const stored = JSON.parse(localStorage.getItem("mbox:liked") ?? "[]") as number[];
+        const next = wasLiked
+          ? stored.filter((id) => id !== trackId)
+          : [...stored, trackId];
+        localStorage.setItem("mbox:liked", JSON.stringify(next));
+      } catch {}
+      fetch(`/api/like/${trackId}`, { method: "POST" })
+        .then((r) => r.json())
+        .then((data: { liked: boolean; count: number }) => {
+          setRankingData((prev) => ({
+            ...prev,
+            [trackId]: {
+              ...prev[trackId],
+              likes: data.count,
+              score: data.count * 5 + (prev[trackId]?.plays ?? 0),
+            },
+          }));
+        })
+        .catch(() => {});
+    },
+    [likedByMe]
+  );
 
   const scrollToPlaylist = () => {
     playlistRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -704,8 +768,8 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
               {/* リスト */}
               <div style={{ background: "#FFFDF8", flex: 1 }}>
                 {tab === "playlist"
-                  ? <RetroPlaylist tracks={trackList} currentIndex={currentIndex} isPlaying={isPlaying} playCounts={playCounts} onSelect={selectTrack} />
-                  : <RetroRankings tracks={trackList} playCounts={playCounts} currentTrackId={track.id} onSelect={selectTrack} allTracks={trackList} />
+                  ? <RetroPlaylist tracks={trackList} currentIndex={currentIndex} isPlaying={isPlaying} playCounts={playCounts} onSelect={selectTrack} likedByMe={likedByMe} onToggleLike={toggleLike} />
+                  : <RetroRankings tracks={trackList} playCounts={playCounts} currentTrackId={track.id} onSelect={selectTrack} allTracks={trackList} rankingData={rankingData} likedByMe={likedByMe} onToggleLike={toggleLike} />
                 }
               </div>
             </div>

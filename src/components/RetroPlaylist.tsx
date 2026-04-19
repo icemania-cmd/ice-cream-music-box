@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, X, Heart } from "lucide-react";
 import { Track } from "@/lib/tracks";
 
 const PAGE_SIZE = 10;
@@ -15,12 +15,16 @@ type Props = {
   isPlaying: boolean;
   playCounts: Record<number, number>;
   onSelect: (idx: number) => void;
+  likedByMe: Set<number>;
+  onToggleLike: (trackId: number) => void;
 };
 
 export default function RetroPlaylist({
   tracks, currentIndex, isPlaying, playCounts, onSelect,
+  likedByMe, onToggleLike,
 }: Props) {
   const [query, setQuery] = useState("");
+  const [likeAnimating, setLikeAnimating] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -213,21 +217,31 @@ export default function RetroPlaylist({
                   </p>
                 </div>
 
-                {/* 再生回数 */}
-                <span
-                  className="flex-shrink-0 tabular-nums"
-                  style={{
-                    fontSize: 10,
-                    color: isCurrent ? "#B8800A" : "#C4A882",
-                    fontFamily: FONT,
-                    minWidth: 32,
-                    textAlign: "right",
+                {/* いいねボタン */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLikeAnimating(t.id);
+                    onToggleLike(t.id);
+                    setTimeout(() => setLikeAnimating(null), 300);
                   }}
+                  className="flex-shrink-0 flex items-center justify-center rounded-full"
+                  style={{
+                    width: 30,
+                    height: 30,
+                    transform: likeAnimating === t.id ? "scale(1.35)" : "scale(1)",
+                    transition: "transform 0.2s cubic-bezier(0.34,1.56,0.64,1)",
+                    background: likedByMe.has(t.id) ? "#FEE8EF" : "transparent",
+                  }}
+                  aria-label={likedByMe.has(t.id) ? "いいねを取り消す" : "いいねする"}
                 >
-                  {playCount >= 1000
-                    ? `${(playCount / 1000).toFixed(1)}k`
-                    : playCount > 0 ? String(playCount) : ""}
-                </span>
+                  <Heart
+                    size={14}
+                    fill={likedByMe.has(t.id) ? BRAND : "none"}
+                    color={likedByMe.has(t.id) ? BRAND : "#C8A888"}
+                    strokeWidth={2}
+                  />
+                </button>
               </button>
             );
           })
