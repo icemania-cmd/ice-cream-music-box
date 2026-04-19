@@ -1,19 +1,27 @@
 /**
- * WAVファイルをCloudflare R2にアップロードするスクリプト
+ * WAVファイルをMP3に変換してCloudflare R2にアップロードするスクリプト
  *
  * 使い方:
  *   node --env-file=.env.local scripts/sync-to-r2.mjs
  *
+ * 前提条件:
+ *   ffmpeg がインストールされていること
+ *   インストール方法: https://ffmpeg.org/download.html
+ *   Windows: winget install ffmpeg  または  choco install ffmpeg
+ *   Mac:     brew install ffmpeg
+ *
  * 処理内容:
  *   1. DropboxフォルダのWAVファイルを一覧
  *   2. tracks-meta.json を読んでメタデータをマージ
- *   3. 各WAVを R2: audio/<filename> にアップロード
- *   4. tracks.json（曲リスト）を R2 にアップロード
+ *   3. 各WAVをMP3（128kbps）に変換してR2: audio/<name.mp3> にアップロード
+ *   4. tracks.json（曲リスト、filenameは.mp3）を R2 にアップロード
  *   5. tracks-meta.json を R2 にアップロード（バックアップ）
  */
 
 import { S3Client, PutObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { execSync } from "child_process";
 import fs from "fs";
+import os from "os";
 import path from "path";
 
 // ──────────────────────────────────────────────
@@ -23,8 +31,8 @@ const AUDIO_DIR =
   "C:\\Users\\iceman\\ICEMANIA Dropbox\\★日本アイスマニア協会\\a_アイスの歌\\AI-SONG\\w_wav\\b_BGM京都2026";
 const META_FILE = path.join(AUDIO_DIR, "tracks-meta.json");
 
-// 並列アップロード数（大きいファイルなので控えめに）
-const CONCURRENCY = 3;
+// 並列アップロード数（変換+アップロードなので控えめに）
+const CONCURRENCY = 2;
 
 // プレイリストから除外するファイル名（R2には残るが曲一覧に表示しない）
 const EXCLUDED_FILES = [
@@ -68,6 +76,21 @@ const r2 = new S3Client({
 const BUCKET = R2_BUCKET_NAME;
 
 // ──────────────────────────────────────────────
+// ffmpegチェック
+// ──────────────────────────────────────────────
+function checkFfmpeg() {
+  try {
+    execSync("ffmpeg -version", { stdio: "ignore" });
+  } catch {
+    console.error("❌ ffmpeg が見つかりません。インストールしてください。");
+    console.error("   Windows: winget install ffmpeg  または  choco install ffmpeg");
+    console.error("   Mac:     brew install ffmpeg");
+    console.error("   詳細:    https://ffmpeg.org/download.html");
+    process.exit(1);
+  }
+}
+
+// ──────────────────────────────────────────────
 // ユーティリティ
 // ──────────────────────────────────────────────
 function colorFromFilename(filename) {
@@ -86,13 +109,18 @@ function colorFromFilename(filename) {
 
 function titleFromFilename(filename) {
   return filename
-    .replace(/\.wav$/i, "")
+    .replace(/\.(wav|mp3)$/i, "")
     .replace(/\s*\([Vv]\d+(\.\d+)?\)/g, "")
     .replace(/\s*\(Remastered[^)]*\)/gi, "")
     .replace(/\s*\(Re-Recording[^)]*\)/gi, "")       // (Re-Recording_v4) 等
     .replace(/\s*\(Re-?[Rr]ecording[^)]*\)/gi, "")   // バリエーション
     .replace(/\s*_v\d+(\.\d+)?$/gi, "")
     .trim();
+}
+
+/** WAVをMP3（128kbps）に変換してMP3のパスを返す */
+function convertToMp3(wavPath, mp3Path) {
+  execSync(`ffmpeg -y -i "${wavPath}" -b:a 128k "${mp3Path}"`, { stdio: "inherit" });
 }
 
 /** R2にオブジェクトが存在するか確認 */
@@ -136,6 +164,10 @@ async function pLimit(tasks, limit) {
 async function main() {
   console.log("🍦 ICE CREAM MUSIC BOX — R2 アップロード開始\n");
 
+  // ffmpegチェック
+  checkFfmpeg();
+  console.log("✅ ffmpeg 確認済み\n");
+
   // 1. WAVファイル一覧
   if (!fs.existsSync(AUDIO_DIR)) {
     console.error(`❌ フォルダが見つかりません: ${AUDIO_DIR}`);
@@ -178,48 +210,59 @@ async function main() {
     console.warn("⚠️  tracks-meta.json が見つかりません。ファイル名からタイトルを生成します。");
   }
 
-  // 3. Track[] を構築
-  const tracks = sortedFiles.map((filename, idx) => {
-    const m = meta[filename] ?? {};
+  // 3. Track[] を構築（filenameは.mp3）
+  const tracks = sortedFiles.map((wavFilename, idx) => {
+    const mp3Filename = wavFilename.replace(/\.wav$/i, ".mp3");
+    const m = meta[wavFilename] ?? {};
     return {
       id: idx + 1,
-      title: m.title ?? titleFromFilename(filename),
+      title: m.title ?? titleFromFilename(wavFilename),
       artist: m.artist ?? "AI-SONG",
       genre: m.genre ?? "BGM",
       plays: m.plays ?? 0,
-      color: m.color ?? colorFromFilename(filename),
-      filename,
+      color: m.color ?? colorFromFilename(wavFilename),
+      filename: mp3Filename,
     };
   });
 
-  // 4. WAVファイルをR2にアップロード（既存はスキップ）
-  console.log("🎵 WAVファイルをアップロード中...\n");
+  // 4. WAV→MP3変換してR2にアップロード（既存はスキップ）
+  console.log("🎵 WAV→MP3変換＆アップロード中...\n");
   let uploaded = 0;
   let skipped = 0;
+  const tmpDir = os.tmpdir();
 
-  const uploadTasks = sortedFiles.map((filename) => async () => {
-    const key = `audio/${filename}`;
-    const filePath = path.join(AUDIO_DIR, filename);
-    const stat = fs.statSync(filePath);
-    const sizeMB = (stat.size / 1024 / 1024).toFixed(1);
+  const uploadTasks = sortedFiles.map((wavFilename) => async () => {
+    const mp3Filename = wavFilename.replace(/\.wav$/i, ".mp3");
+    const r2Key = `audio/${mp3Filename}`;
+    const wavPath = path.join(AUDIO_DIR, wavFilename);
 
-    const exists = await existsInR2(key);
+    const exists = await existsInR2(r2Key);
     if (exists) {
-      console.log(`  ⏭️  スキップ: ${filename} (${sizeMB}MB) — R2に存在`);
+      const stat = fs.statSync(wavPath);
+      console.log(`  ⏭️  スキップ: ${mp3Filename} (WAV: ${(stat.size / 1024 / 1024).toFixed(1)}MB) — R2に存在`);
       skipped++;
       return;
     }
 
-    console.log(`  ⬆️  アップロード: ${filename} (${sizeMB}MB)...`);
-    const body = fs.readFileSync(filePath);
-    await uploadFile(key, body, "audio/wav");
-    console.log(`  ✅ 完了: ${filename}`);
-    uploaded++;
+    const stat = fs.statSync(wavPath);
+    console.log(`  🔄 変換中: ${wavFilename} (${(stat.size / 1024 / 1024).toFixed(1)}MB) → ${mp3Filename}`);
+    const tmpMp3 = path.join(tmpDir, `icecream_${Date.now()}_${mp3Filename}`);
+    try {
+      convertToMp3(wavPath, tmpMp3);
+      const mp3Stat = fs.statSync(tmpMp3);
+      console.log(`  ⬆️  アップロード: ${mp3Filename} (${(mp3Stat.size / 1024 / 1024).toFixed(1)}MB)...`);
+      const body = fs.readFileSync(tmpMp3);
+      await uploadFile(r2Key, body, "audio/mpeg");
+      console.log(`  ✅ 完了: ${mp3Filename}`);
+      uploaded++;
+    } finally {
+      if (fs.existsSync(tmpMp3)) fs.unlinkSync(tmpMp3);
+    }
   });
 
   await pLimit(uploadTasks, CONCURRENCY);
 
-  console.log(`\n📊 WAV: ${uploaded}件アップロード, ${skipped}件スキップ\n`);
+  console.log(`\n📊 MP3: ${uploaded}件アップロード, ${skipped}件スキップ\n`);
 
   // 5. tracks.json をR2にアップロード
   console.log("📋 tracks.json をアップロード中...");

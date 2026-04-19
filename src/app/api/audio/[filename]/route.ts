@@ -24,7 +24,7 @@ export async function GET(
     try {
       const r2Res = await fetch(r2Url, { headers: fetchHeaders });
       const resHeaders: Record<string, string> = {
-        "Content-Type": "audio/wav",
+        "Content-Type": "audio/mpeg",
         "Accept-Ranges": "bytes",
         "Cache-Control": "public, max-age=3600",
         "Access-Control-Allow-Origin": "*",
@@ -60,7 +60,7 @@ export async function GET(
   const rangeHeader = req.headers.get("range");
 
   const headers: Record<string, string> = {
-    "Content-Type": "audio/wav",
+    "Content-Type": "audio/mpeg",
     "Accept-Ranges": "bytes",
     "Cache-Control": "public, max-age=3600",
     "Access-Control-Allow-Origin": "*",

@@ -5,7 +5,7 @@ export type Track = {
   genre: string;
   plays: number;
   color: string;
-  filename: string; // WAVファイル名
+  filename: string; // 音声ファイル名
 };
 
 export const tracks: Track[] = [
@@ -16,7 +16,7 @@ export const tracks: Track[] = [
     genre: "Pop",
     plays: 6430,
     color: "#D65076",
-    filename: "Welcome to Aipaku.wav",
+    filename: "Welcome to Aipaku.mp3",
   },
   {
     id: 2,
@@ -25,7 +25,7 @@ export const tracks: Track[] = [
     genre: "Pop",
     plays: 5120,
     color: "#5DB89A",
-    filename: "Ice Cream Wonderland.wav",
+    filename: "Ice Cream Wonderland.mp3",
   },
   {
     id: 3,
@@ -34,7 +34,7 @@ export const tracks: Track[] = [
     genre: "Pop",
     plays: 4780,
     color: "#E8A0BF",
-    filename: "アイ・アイ・I LOVE ICE CREAM.wav",
+    filename: "アイ・アイ・I LOVE ICE CREAM.mp3",
   },
   {
     id: 4,
@@ -43,7 +43,7 @@ export const tracks: Track[] = [
     genre: "J-Pop",
     plays: 4210,
     color: "#FFB347",
-    filename: "おいしい呪文.wav",
+    filename: "おいしい呪文.mp3",
   },
   {
     id: 5,
@@ -52,7 +52,7 @@ export const tracks: Track[] = [
     genre: "Rock",
     plays: 3842,
     color: "#6A8FC9",
-    filename: "Ice Cream Syndrome.wav",
+    filename: "Ice Cream Syndrome.mp3",
   },
   {
     id: 6,
@@ -61,7 +61,7 @@ export const tracks: Track[] = [
     genre: "Pop",
     plays: 3760,
     color: "#FF8C94",
-    filename: "icecream holic.wav",
+    filename: "icecream holic.mp3",
   },
   {
     id: 7,
@@ -70,7 +70,7 @@ export const tracks: Track[] = [
     genre: "Ballad",
     plays: 3300,
     color: "#B8A9C9",
-    filename: "Melting in our hearts.wav",
+    filename: "Melting in our hearts.mp3",
   },
   {
     id: 8,
@@ -79,7 +79,7 @@ export const tracks: Track[] = [
     genre: "J-Pop",
     plays: 3100,
     color: "#F5A623",
-    filename: "8月の花火と君とアイス (Remastered_v4.5).wav",
+    filename: "8月の花火と君とアイス (Remastered_v4.5).mp3",
   },
   {
     id: 9,
@@ -88,7 +88,7 @@ export const tracks: Track[] = [
     genre: "Party",
     plays: 2971,
     color: "#5DB89A",
-    filename: "チョコミン党(V5).wav",
+    filename: "チョコミン党(V5).mp3",
   },
   {
     id: 10,
@@ -97,7 +97,7 @@ export const tracks: Track[] = [
     genre: "Pop",
     plays: 2840,
     color: "#E55B4D",
-    filename: "Heat Shock ～溶けない約束～(v5).wav",
+    filename: "Heat Shock ～溶けない約束～(v5).mp3",
   },
   {
     id: 11,
@@ -106,7 +106,7 @@ export const tracks: Track[] = [
     genre: "Dance",
     plays: 2750,
     color: "#FFD700",
-    filename: "Scoop Me Up.wav",
+    filename: "Scoop Me Up.mp3",
   },
   {
     id: 12,
@@ -115,7 +115,7 @@ export const tracks: Track[] = [
     genre: "EDM",
     plays: 2640,
     color: "#7B68EE",
-    filename: "Ice Cream Virtual City（v5）.wav",
+    filename: "Ice Cream Virtual City（v5）.mp3",
   },
   {
     id: 13,
@@ -124,7 +124,7 @@ export const tracks: Track[] = [
     genre: "R&B",
     plays: 2540,
     color: "#D2691E",
-    filename: "flavor forever.wav",
+    filename: "flavor forever.mp3",
   },
   {
     id: 14,
@@ -133,7 +133,7 @@ export const tracks: Track[] = [
     genre: "Pop",
     plays: 2480,
     color: "#FF69B4",
-    filename: "La La La Love ice cream.wav",
+    filename: "La La La Love ice cream.mp3",
   },
   {
     id: 15,
@@ -142,7 +142,7 @@ export const tracks: Track[] = [
     genre: "City Pop",
     plays: 2350,
     color: "#F4A460",
-    filename: "アイスクリームと黄昏の街（v5）.wav",
+    filename: "アイスクリームと黄昏の街（v5）.mp3",
   },
   {
     id: 16,
@@ -151,7 +151,7 @@ export const tracks: Track[] = [
     genre: "Pop",
     plays: 2200,
     color: "#87CEEB",
-    filename: "I am ice cream（she-v5）.wav",
+    filename: "I am ice cream（she-v5）.mp3",
   },
   {
     id: 17,
@@ -160,7 +160,7 @@ export const tracks: Track[] = [
     genre: "Rock",
     plays: 2100,
     color: "#708090",
-    filename: "Foolish man.wav",
+    filename: "Foolish man.mp3",
   },
   {
     id: 18,
@@ -169,7 +169,7 @@ export const tracks: Track[] = [
     genre: "Pop",
     plays: 2050,
     color: "#98FB98",
-    filename: "Ice cream paradise.wav",
+    filename: "Ice cream paradise.mp3",
   },
   {
     id: 19,
@@ -178,7 +178,7 @@ export const tracks: Track[] = [
     genre: "Winter",
     plays: 1980,
     color: "#B0E0E6",
-    filename: "Glorious Winter Ice.wav",
+    filename: "Glorious Winter Ice.mp3",
   },
   {
     id: 20,
@@ -187,7 +187,7 @@ export const tracks: Track[] = [
     genre: "Comedy",
     plays: 1920,
     color: "#FFA07A",
-    filename: "アイスクリームくっそ食べたい（V5）.wav",
+    filename: "アイスクリームくっそ食べたい（V5）.mp3",
   },
   {
     id: 21,
@@ -196,7 +196,7 @@ export const tracks: Track[] = [
     genre: "Dance",
     plays: 1890,
     color: "#FF6347",
-    filename: "Hurry! Hurry! Hurry! .wav",
+    filename: "Hurry! Hurry! Hurry! .mp3",
   },
   {
     id: 22,
@@ -205,7 +205,7 @@ export const tracks: Track[] = [
     genre: "Ballad",
     plays: 1860,
     color: "#DDA0DD",
-    filename: "Ice Cream and One Story(V5).wav",
+    filename: "Ice Cream and One Story(V5).mp3",
   },
   {
     id: 23,
@@ -214,7 +214,7 @@ export const tracks: Track[] = [
     genre: "J-Pop",
     plays: 1820,
     color: "#D65076",
-    filename: "アイスクリーム総選挙.wav",
+    filename: "アイスクリーム総選挙.mp3",
   },
   {
     id: 24,
@@ -223,7 +223,7 @@ export const tracks: Track[] = [
     genre: "Comedy",
     plays: 1750,
     color: "#20B2AA",
-    filename: "3秒ルール.wav",
+    filename: "3秒ルール.mp3",
   },
   {
     id: 25,
@@ -232,7 +232,7 @@ export const tracks: Track[] = [
     genre: "Pop",
     plays: 1700,
     color: "#9370DB",
-    filename: "アイスだらけのcameraroll.wav",
+    filename: "アイスだらけのcameraroll.mp3",
   },
   {
     id: 26,
@@ -241,7 +241,7 @@ export const tracks: Track[] = [
     genre: "Folk",
     plays: 1650,
     color: "#F5DEB3",
-    filename: "クラフトソフトクリーム.wav",
+    filename: "クラフトソフトクリーム.mp3",
   },
   {
     id: 27,
@@ -250,7 +250,7 @@ export const tracks: Track[] = [
     genre: "Ballad",
     plays: 1600,
     color: "#4682B4",
-    filename: "ペンギンの告白 -Ice Cream Love-.wav",
+    filename: "ペンギンの告白 -Ice Cream Love-.mp3",
   },
   {
     id: 28,
@@ -259,7 +259,7 @@ export const tracks: Track[] = [
     genre: "Comedy",
     plays: 1560,
     color: "#CD853F",
-    filename: "アイス食べさせてクレメンス.wav",
+    filename: "アイス食べさせてクレメンス.mp3",
   },
   {
     id: 29,
@@ -268,7 +268,7 @@ export const tracks: Track[] = [
     genre: "Pop",
     plays: 1520,
     color: "#5DB89A",
-    filename: "一日くらい大丈夫（V5）.wav",
+    filename: "一日くらい大丈夫（V5）.mp3",
   },
   {
     id: 30,
@@ -277,7 +277,7 @@ export const tracks: Track[] = [
     genre: "Comedy",
     plays: 1480,
     color: "#B22222",
-    filename: "アイスクリームの恨みは怖いのよ (V5).wav",
+    filename: "アイスクリームの恨みは怖いのよ (V5).mp3",
   },
   {
     id: 31,
@@ -286,7 +286,7 @@ export const tracks: Track[] = [
     genre: "Nostalgic",
     plays: 1440,
     color: "#DAA520",
-    filename: "思い出のアイスキャンディー.wav",
+    filename: "思い出のアイスキャンディー.mp3",
   },
   {
     id: 32,
@@ -295,7 +295,7 @@ export const tracks: Track[] = [
     genre: "J-Pop",
     plays: 1400,
     color: "#708090",
-    filename: "レイガシノミチ.wav",
+    filename: "レイガシノミチ.mp3",
   },
   {
     id: 33,
@@ -304,15 +304,16 @@ export const tracks: Track[] = [
     genre: "Winter",
     plays: 1360,
     color: "#87CEEB",
-    filename: "僕は冬のアイスです.wav",
+    filename: "僕は冬のアイスです.mp3",
   },
 ];
 
 export const getRanking = (): Track[] =>
   [...tracks].sort((a, b) => b.plays - a.plays);
 
-// 本番・開発ともに /api/audio/ 経由でストリーム
-// 本番: APIルートがR2からプロキシ（CORSヘッダー付与）
-// 開発: APIルートがローカルファイルを直接ストリーム
-export const getAudioUrl = (filename: string): string =>
-  `/api/audio/${encodeURIComponent(filename)}`;
+// 本番はR2直接URL（プロキシなし）、開発は /api/audio/ 経由
+export const getAudioUrl = (filename: string): string => {
+  const r2Base = process.env.NEXT_PUBLIC_R2_URL;
+  if (r2Base) return `${r2Base}/audio/${encodeURIComponent(filename)}`;
+  return `/api/audio/${encodeURIComponent(filename)}`;
+};
