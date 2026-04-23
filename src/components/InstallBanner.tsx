@@ -181,7 +181,7 @@ export default function InstallBanner() {
           </div>
         </div>
 
-        {/* 手順案内（プロンプトがない環境向け） */}
+        {/* 手順案内（プロンプトがない環境向け・iOS/Android出し分け） */}
         {showIOSHint && !deferredPrompt && (
           <div style={{
             marginTop: 12,
@@ -189,27 +189,55 @@ export default function InstallBanner() {
             borderRadius: 10,
             padding: "10px 14px",
           }}>
-            <p style={{
-              color: "#fff",
-              fontSize: 12,
-              fontWeight: 700,
-              marginBottom: 6,
-              fontFamily: "'M PLUS Rounded 1c', sans-serif",
-            }}>
-              Safari でホーム画面に追加する方法
-            </p>
-            <ol style={{
-              color: "rgba(255,255,255,0.9)",
-              fontSize: 12,
-              lineHeight: 1.9,
-              paddingLeft: 18,
-              margin: 0,
-              fontFamily: "'M PLUS Rounded 1c', sans-serif",
-            }}>
-              <li>画面下部の <strong>共有ボタン（□↑）</strong> をタップ</li>
-              <li><strong>「ホーム画面に追加」</strong> を選択</li>
-              <li>右上の <strong>「追加」</strong> をタップして完了</li>
-            </ol>
+            {platform === "ios" ? (
+              <>
+                <p style={{
+                  color: "#fff",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  marginBottom: 6,
+                  fontFamily: "'M PLUS Rounded 1c', sans-serif",
+                }}>
+                  📱 Safari でホーム画面に追加する方法
+                </p>
+                <ol style={{
+                  color: "rgba(255,255,255,0.9)",
+                  fontSize: 12,
+                  lineHeight: 1.9,
+                  paddingLeft: 18,
+                  margin: 0,
+                  fontFamily: "'M PLUS Rounded 1c', sans-serif",
+                }}>
+                  <li>画面下部の <strong>共有ボタン（□↑）</strong> をタップ</li>
+                  <li><strong>「ホーム画面に追加」</strong> を選択</li>
+                  <li>右上の <strong>「追加」</strong> をタップして完了</li>
+                </ol>
+              </>
+            ) : (
+              <>
+                <p style={{
+                  color: "#fff",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  marginBottom: 6,
+                  fontFamily: "'M PLUS Rounded 1c', sans-serif",
+                }}>
+                  🤖 Android でホーム画面に追加する方法
+                </p>
+                <ol style={{
+                  color: "rgba(255,255,255,0.9)",
+                  fontSize: 12,
+                  lineHeight: 1.9,
+                  paddingLeft: 18,
+                  margin: 0,
+                  fontFamily: "'M PLUS Rounded 1c', sans-serif",
+                }}>
+                  <li>ブラウザ右上の <strong>メニュー（⋮）</strong> をタップ</li>
+                  <li><strong>「ホーム画面に追加」</strong> を選択</li>
+                  <li><strong>「追加」</strong> をタップして完了</li>
+                </ol>
+              </>
+            )}
           </div>
         )}
       </div>
