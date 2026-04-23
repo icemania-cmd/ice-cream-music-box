@@ -8,7 +8,7 @@ export interface LrcLine {
 /** LRC文字列を {time, text}[] にパース */
 function parseLrc(lrc: string): LrcLine[] {
   const lines: LrcLine[] = [];
-  for (const raw of lrc.split("\n")) {
+  for (const raw of lrc.split(/\r?\n/)) {
     const match = raw.match(/^\[(\d{1,2}):(\d{2})\.(\d{1,3})\](.*)$/);
     if (!match) continue;
     const min = parseInt(match[1], 10);
