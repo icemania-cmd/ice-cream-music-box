@@ -11,6 +11,8 @@ import NowPlayingModal from "./NowPlayingModal";
 import Visualizer from "./Visualizer";
 import ShareButtons from "./ShareButtons";
 import AppShareButtons from "./AppShareButtons";
+import LyricsModal from "./LyricsModal";
+import { useLyrics } from "@/hooks/useLyrics";
 
 import LiveListeners from "./LiveListeners";
 import {
@@ -272,6 +274,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
   const engine = useAudioEngine(initialTracks);
   const [tab, setTab] = useState<Tab>("playlist");
   const [showNowPlaying, setShowNowPlaying] = useState(false);
+  const [showLyrics, setShowLyrics] = useState(false);
   const [reloading, setReloading] = useState(false);
   const [reloadMsg, setReloadMsg] = useState<string | null>(null);
   const playlistRef = useRef<HTMLDivElement>(null);
@@ -289,6 +292,8 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
   } = engine;
 
   const elapsed = progress * duration;
+  const lyricsFilename = track.filename.replace(/\.[^.]+$/, "");
+  const { lines: lyricsLines, currentIndex: lyricsIndex, status: lyricsStatus } = useLyrics(lyricsFilename, elapsed);
 
   // 起動時: URLの ?track=<id> を読んで該当曲を選択
   useEffect(() => {
@@ -421,6 +426,16 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
           onPlay={play} onPause={pause} onNext={next} onPrev={prev} onSeek={seek}
         />
       )}
+      <LyricsModal
+        isOpen={showLyrics}
+        onClose={() => setShowLyrics(false)}
+        trackTitle={track.title}
+        lines={lyricsLines}
+        currentIndex={lyricsIndex}
+        status={lyricsStatus}
+        currentTime={elapsed}
+        duration={duration}
+      />
 
       {/* 全画面ラッパー */}
       <div style={{
@@ -734,6 +749,38 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
 
               {/* ── ボリューム（リデザイン） ── */}
               <VolumeControl volume={volume} onChange={changeVolume} />
+
+              {/* 歌詞ボタン */}
+              <button
+                onClick={() => setShowLyrics(true)}
+                style={{
+                  width: "100%",
+                  padding: "9px 0",
+                  borderRadius: 20,
+                  border: lyricsStatus === "ready"
+                    ? "1.5px solid rgba(214,80,118,0.5)"
+                    : "1.5px solid rgba(139,106,74,0.2)",
+                  background: lyricsStatus === "ready"
+                    ? "linear-gradient(135deg, #D65076, #c04068)"
+                    : "rgba(61,43,26,0.04)",
+                  color: lyricsStatus === "ready" ? "#fff" : "#8B6A4A",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  boxShadow: lyricsStatus === "ready"
+                    ? "0 3px 12px rgba(214,80,118,0.35)"
+                    : "none",
+                  transition: "all 0.3s ease",
+                  fontFamily: "var(--font-mplus), 'M PLUS Rounded 1c', sans-serif",
+                }}
+              >
+                ♪ {lyricsStatus === "ready" ? "歌詞" : "歌詞準備中"}
+              </button>
 
               {/* シェアボタン */}
               <div className="w-full">
