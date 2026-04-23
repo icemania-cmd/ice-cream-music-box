@@ -77,15 +77,16 @@ export default function InstallBanner() {
   };
 
   const handleInstall = async () => {
-    if (platform === "ios") {
-      setShowIOSHint((v) => !v);
+    // ネイティブプロンプトがある場合（Android Chrome等）
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") setIsInstalled(true);
+      setDeferredPrompt(null);
       return;
     }
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") setIsInstalled(true);
-    setDeferredPrompt(null);
+    // プロンプトがない場合（iOS Safari等）は手順を表示
+    setShowIOSHint((v) => !v);
   };
 
   // SSR時・インストール済み・閉じた後は非表示
@@ -102,6 +103,7 @@ export default function InstallBanner() {
         background: "#D65076",
         boxShadow: "0 -4px 20px rgba(214, 80, 118, 0.4)",
         fontFamily: "'M PLUS Rounded 1c', sans-serif",
+        paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
       <div style={{ padding: "12px 16px 16px" }}>
@@ -156,7 +158,7 @@ export default function InstallBanner() {
               marginBottom: 8,
               fontFamily: "'M PLUS Rounded 1c', sans-serif",
             }}>
-              アプリのようにすぐ起動できます
+              モバイルアプリとしてすぐに起動できます。
             </p>
             <button
               onClick={handleInstall}
@@ -174,13 +176,13 @@ export default function InstallBanner() {
                 boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
               }}
             >
-              {platform === "ios" ? "📱 追加方法を見る" : "インストール"}
+              {deferredPrompt ? "インストール" : "📱 追加方法を見る"}
             </button>
           </div>
         </div>
 
-        {/* iOSの場合: 手順案内 */}
-        {showIOSHint && platform === "ios" && (
+        {/* 手順案内（プロンプトがない環境向け） */}
+        {showIOSHint && !deferredPrompt && (
           <div style={{
             marginTop: 12,
             background: "rgba(255,255,255,0.15)",
