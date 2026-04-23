@@ -2,6 +2,16 @@
 
 import { useEffect, useState } from "react";
 
+/** 時間帯別の水増し人数を返す（JST） */
+function getTimeOffset(): number {
+  const hour = new Date().getHours(); // ローカル時刻（JST環境前提）
+  if (hour < 2)  return 5;  // 0〜2時
+  if (hour < 6)  return 2;  // 2〜6時
+  if (hour < 10) return 8;  // 6〜10時
+  if (hour < 22) return 10; // 10〜22時
+  return 6;                  // 22〜24時
+}
+
 /** ランダムなセッションIDを生成（タブを閉じるまで保持） */
 function getSessionId(): string {
   const key = "icmb-session";
@@ -65,7 +75,7 @@ export default function LiveListeners() {
         letterSpacing: "0.08em",
         fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
       }}>
-        いま <strong style={{ color: "#B8800A", fontSize: 13 }}>{count + 10}</strong> 名がアイスクリームミュージックを再生中
+        いま <strong style={{ color: "#B8800A", fontSize: 13 }}>{count + getTimeOffset()}</strong> 名がアイスクリームミュージックを再生中
       </p>
       <style>{`
         @keyframes live-pulse {

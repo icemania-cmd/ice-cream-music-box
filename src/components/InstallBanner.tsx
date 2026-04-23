@@ -90,8 +90,6 @@ export default function InstallBanner() {
 
   // SSR時・インストール済み・閉じた後は非表示
   if (!mounted || isInstalled || dismissed) return null;
-  // iOSでもAndroid/Desktopでもなければ非表示
-  if (platform === "other" && !deferredPrompt) return null;
 
   return (
     <div
