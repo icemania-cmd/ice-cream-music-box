@@ -20,9 +20,10 @@ import {
   IconShuffle, IconRepeat, IconRepeatOne,
   IconExpand, IconList, IconTrophy,
 } from "./FlatIcons";
-import { Volume1, Volume2, VolumeX, Zap, RotateCcw, RotateCw } from "lucide-react";
+import { Volume1, Volume2, VolumeX, Zap, RotateCcw, RotateCw, Trophy, ListMusic, Flame } from "lucide-react";
 
 type Tab = "playlist" | "ranking";
+const RANKING_IDLE = "#C04868";
 
 /** "AI-SONG" を表示用に変換 */
 const displayArtist = (a: string) => a === "AI-SONG" ? "ICECREAM SONG" : a;
@@ -792,22 +793,56 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
             <div className="flex-1 flex flex-col min-w-0" ref={playlistRef}>
 
               {/* タブバー */}
-              <div className="flex" style={{ borderBottom: "1.5px solid #E8D5B0", background: "#FFF9F0" }}>
-                {(["playlist", "ranking"] as Tab[]).map((t) => (
-                  <button key={t} onClick={() => setTab(t)}
-                    className="flex items-center gap-1.5 px-4 py-2.5 text-xs transition-all"
-                    style={{
-                      color: tab === t ? "#B8800A" : "#8B6A4A",
-                      borderBottom: tab === t ? "2.5px solid #B8800A" : "2.5px solid transparent",
-                      background: "transparent", fontWeight: tab === t ? 700 : 400,
-                      fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif", letterSpacing: "0.1em",
-                    }}>
-                    {t === "playlist"
-                      ? <><IconList size={13} color={tab === t ? "#B8800A" : "#8B6A4A"} /> プレイリスト</>
-                      : <><IconTrophy size={13} color={tab === t ? "#B8800A" : "#8B6A4A"} /> 人気ランキング</>
-                    }
-                  </button>
-                ))}
+              <div className="flex items-stretch" style={{ borderBottom: "1.5px solid #E8D5B0", background: "#FFF9F0" }}>
+                {/* プレイリストタブ */}
+                <button onClick={() => setTab("playlist")}
+                  className="flex items-center gap-1.5 px-4 py-2.5 text-xs transition-all"
+                  style={{
+                    color: tab === "playlist" ? "#B8800A" : "#8B6A4A",
+                    borderBottom: tab === "playlist" ? "2.5px solid #B8800A" : "2.5px solid transparent",
+                    background: "transparent", fontWeight: tab === "playlist" ? 700 : 400,
+                    fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif", letterSpacing: "0.1em",
+                  }}>
+                  <ListMusic size={14} color={tab === "playlist" ? "#B8800A" : "#8B6A4A"} strokeWidth={2} />
+                  プレイリスト
+                </button>
+
+                {/* 人気ランキングタブ（目立つデザイン） */}
+                <button onClick={() => setTab("ranking")}
+                  className={`flex items-center gap-1.5 px-5 py-2.5 text-xs transition-all relative${tab === "ranking" ? " ranking-tab-active" : " ranking-tab-idle"}`}
+                  style={{
+                    color: tab === "ranking" ? "#fff" : RANKING_IDLE,
+                    background: tab === "ranking"
+                      ? "linear-gradient(135deg, #D65076, #E0607F)"
+                      : "transparent",
+                    borderBottom: tab === "ranking"
+                      ? "2.5px solid #D65076"
+                      : "2.5px solid transparent",
+                    fontWeight: 700,
+                    fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
+                    letterSpacing: "0.1em",
+                    borderRadius: tab === "ranking" ? "8px 8px 0 0" : 0,
+                    boxShadow: tab === "ranking" ? "0 -2px 10px rgba(214,80,118,0.25)" : "none",
+                  }}>
+                  <Trophy size={14} color={tab === "ranking" ? "#fff" : RANKING_IDLE} strokeWidth={2.2} fill={tab === "ranking" ? "rgba(255,255,255,0.2)" : "none"} />
+                  人気ランキング
+                  {tab !== "ranking" && (
+                    <Flame size={12} color="#D65076" strokeWidth={2} className="ranking-flame" style={{ marginLeft: -2 }} />
+                  )}
+                  {tab === "ranking" && (
+                    <span style={{
+                      position: "absolute", top: -6, right: -4,
+                      fontSize: 8, fontWeight: 800,
+                      color: "#fff",
+                      background: "linear-gradient(135deg, #FF6B9D, #D65076)",
+                      padding: "1px 6px",
+                      borderRadius: 8,
+                      boxShadow: "0 2px 6px rgba(214,80,118,0.4)",
+                      letterSpacing: "0.06em",
+                    }}>HOT</span>
+                  )}
+                </button>
+
                 <span className="ml-auto flex items-center px-4" style={{ color: "#B8A080", fontSize: 10 }}>
                   {trackList.length}曲
                 </span>
@@ -891,6 +926,27 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
         }
         .volume-range-input::-moz-range-thumb {
           width: 28px; height: 28px; opacity: 0; border: none;
+        }
+        /* ランキングタブ：炎アイコンの揺れアニメーション */
+        .ranking-flame {
+          animation: flicker 1.5s ease-in-out infinite;
+        }
+        @keyframes flicker {
+          0%, 100% { opacity: 0.7; transform: scale(1) translateY(0); }
+          50% { opacity: 1; transform: scale(1.15) translateY(-1px); }
+        }
+        /* ランキングタブ非アクティブ時のホバー */
+        .ranking-tab-idle:hover {
+          background: rgba(214,80,118,0.08) !important;
+          border-radius: 8px 8px 0 0;
+        }
+        /* ランキングタブアクティブ時の輝き */
+        .ranking-tab-active {
+          animation: rankGlow 2s ease-in-out infinite;
+        }
+        @keyframes rankGlow {
+          0%, 100% { box-shadow: 0 -2px 10px rgba(214,80,118,0.25); }
+          50% { box-shadow: 0 -2px 18px rgba(214,80,118,0.45), 0 0 6px rgba(214,80,118,0.15); }
         }
       `}</style>
     </>
