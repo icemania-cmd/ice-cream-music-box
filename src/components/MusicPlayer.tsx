@@ -319,11 +319,26 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
 
   // マウント時: ランキングデータ取得 + localStorageからいいね済みリスト読込
   useEffect(() => {
-    // 歌詞インデックス取得
-    fetch("/lyrics-index.json")
+    // 歌詞インデックス取得（R2を動的にリスト。フォールバック: 静的JSON）
+    fetch("/api/lyrics-index")
       .then((r) => r.json())
-      .then((list: string[]) => setLyricsAvailable(new Set(list)))
-      .catch(() => {});
+      .then((list: string[]) => {
+        if (list.length > 0) {
+          setLyricsAvailable(new Set(list));
+        } else {
+          // ローカル開発 or R2エラー時は静的JSONにフォールバック
+          return fetch("/lyrics-index.json")
+            .then((r) => r.json())
+            .then((fallback: string[]) => setLyricsAvailable(new Set(fallback)));
+        }
+      })
+      .catch(() => {
+        // 最終フォールバック
+        fetch("/lyrics-index.json")
+          .then((r) => r.json())
+          .then((list: string[]) => setLyricsAvailable(new Set(list)))
+          .catch(() => {});
+      });
 
     // cache: "no-store" でブラウザ/プロキシキャッシュを無効化（常に最新Redisデータを取得）
     fetch("/api/rankings", { cache: "no-store" })

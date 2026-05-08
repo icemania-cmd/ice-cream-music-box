@@ -162,7 +162,16 @@ export default function RetroPlaylist({
             const isCurrent = originalIdx === currentIndex;
             const playCount = playCounts[t.id] ?? t.plays;
             const baseName = t.filename.replace(/\.[^.]+$/, "");
-            const hasLyrics = lyricsAvailable.has(baseName);
+            // 正規化マッチ: バージョン番号・サブタイトルを除去して比較
+            const normalizeName = (n: string) =>
+              n.replace(/〜[^〜]+〜/g, "")
+               .replace(/\s*（[Vv]\d+[^）]*）/g, "")
+               .replace(/\s*\([Vv]\d+[^)]*\)/g, "")
+               .trim();
+            const normalizedBase = normalizeName(baseName);
+            const hasLyrics =
+              lyricsAvailable.has(baseName) ||
+              [...lyricsAvailable].some((n) => normalizeName(n) === normalizedBase);
 
             return (
               <button
