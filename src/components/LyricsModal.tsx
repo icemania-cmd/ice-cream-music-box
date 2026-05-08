@@ -361,7 +361,6 @@ export default function LyricsModal({
                       fontSize,
                       fontWeight,
                       opacity,
-                      filter: blurPx > 0 ? `blur(${blurPx}px)` : undefined,
                       letterSpacing,
                       lineHeight: 1.5,
                       cursor: "default",
@@ -377,7 +376,10 @@ export default function LyricsModal({
                             filter:
                               "drop-shadow(0 0 14px rgba(214,80,118,0.5))",
                           }
-                        : { color }),
+                        : {
+                            color,
+                            filter: blurPx > 0 ? `blur(${blurPx}px)` : undefined,
+                          }),
                     }}
                   >
                     {line.text}
