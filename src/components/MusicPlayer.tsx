@@ -282,6 +282,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
     Record<number, { likes: number; plays: number; score: number }>
   >({});
   const [likedByMe, setLikedByMe] = useState<Set<number>>(new Set());
+  const [lyricsAvailable, setLyricsAvailable] = useState<Set<string>>(new Set());
   const lastPlayedIdRef = useRef<number | null>(null);
 
   const {
@@ -318,6 +319,12 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
 
   // マウント時: ランキングデータ取得 + localStorageからいいね済みリスト読込
   useEffect(() => {
+    // 歌詞インデックス取得
+    fetch("/lyrics-index.json")
+      .then((r) => r.json())
+      .then((list: string[]) => setLyricsAvailable(new Set(list)))
+      .catch(() => {});
+
     // cache: "no-store" でブラウザ/プロキシキャッシュを無効化（常に最新Redisデータを取得）
     fetch("/api/rankings", { cache: "no-store" })
       .then((r) => r.json())
@@ -841,7 +848,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
               {/* リスト */}
               <div style={{ background: "#FFFDF8", flex: 1 }}>
                 {tab === "playlist"
-                  ? <RetroPlaylist tracks={trackList} currentIndex={currentIndex} isPlaying={isPlaying} playCounts={playCounts} onSelect={selectTrack} likedByMe={likedByMe} onToggleLike={toggleLike} rankingData={rankingData} />
+                  ? <RetroPlaylist tracks={trackList} currentIndex={currentIndex} isPlaying={isPlaying} playCounts={playCounts} onSelect={selectTrack} likedByMe={likedByMe} onToggleLike={toggleLike} rankingData={rankingData} lyricsAvailable={lyricsAvailable} onLyricsClick={(idx) => { selectTrack(idx); setShowLyrics(true); }} />
                   : <RetroRankings tracks={trackList} playCounts={playCounts} currentTrackId={track.id} onSelect={selectTrack} allTracks={trackList} rankingData={rankingData} likedByMe={likedByMe} />
                 }
               </div>

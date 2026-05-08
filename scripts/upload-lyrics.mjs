@@ -74,6 +74,14 @@ async function main() {
   }
 
   console.log(`\n完了: ${ok}件成功 / ${fail}件失敗`);
+
+  // lyrics-index.json を更新（歌詞ありのベース名リスト）
+  const uploadedNames = lrcFiles
+    .filter(f => !fail)
+    .map(f => f.replace(/\.lrc$/, ""));
+  const indexPath = path.join(__dirname, "../public/lyrics-index.json");
+  fs.writeFileSync(indexPath, JSON.stringify(uploadedNames, null, 2) + "\n", "utf-8");
+  console.log(`\n📋 lyrics-index.json を更新しました (${uploadedNames.length}件)`);
 }
 
 main().catch(err => {

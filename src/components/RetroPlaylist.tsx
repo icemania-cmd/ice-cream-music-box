@@ -20,11 +20,13 @@ type Props = {
   likedByMe: Set<number>;
   onToggleLike: (trackId: number) => void;
   rankingData: Record<number, RankEntry>;
+  lyricsAvailable: Set<string>;
+  onLyricsClick: (idx: number) => void; // 歌詞バッジクリック時
 };
 
 export default function RetroPlaylist({
   tracks, currentIndex, isPlaying, playCounts, onSelect,
-  likedByMe, onToggleLike, rankingData,
+  likedByMe, onToggleLike, rankingData, lyricsAvailable, onLyricsClick,
 }: Props) {
   const [query, setQuery] = useState("");
   const [likeAnimating, setLikeAnimating] = useState<number | null>(null);
@@ -159,6 +161,8 @@ export default function RetroPlaylist({
             const originalIdx = tracks.indexOf(t);
             const isCurrent = originalIdx === currentIndex;
             const playCount = playCounts[t.id] ?? t.plays;
+            const baseName = t.filename.replace(/\.[^.]+$/, "");
+            const hasLyrics = lyricsAvailable.has(baseName);
 
             return (
               <button
@@ -204,17 +208,48 @@ export default function RetroPlaylist({
 
                 {/* 曲情報 */}
                 <div className="flex-1 min-w-0">
-                  <p
-                    style={{
-                      color: isCurrent ? "#2A1208" : "#3D2010",
-                      fontFamily: isCurrent ? FONT : "inherit",
-                      letterSpacing: isCurrent ? "0.02em" : "normal",
-                      fontSize: 14, fontWeight: isCurrent ? 700 : 400,
-                      whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                    }}
-                  >
-                    {t.title}
-                  </p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
+                    <p
+                      style={{
+                        color: isCurrent ? "#2A1208" : "#3D2010",
+                        fontFamily: isCurrent ? FONT : "inherit",
+                        letterSpacing: isCurrent ? "0.02em" : "normal",
+                        fontSize: 14, fontWeight: isCurrent ? 700 : 400,
+                        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                        flex: 1, minWidth: 0,
+                      }}
+                    >
+                      {t.title}
+                    </p>
+                    {hasLyrics && (
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onLyricsClick(originalIdx);
+                        }}
+                        style={{
+                          flexShrink: 0,
+                          fontSize: 9,
+                          fontWeight: 700,
+                          letterSpacing: "0.08em",
+                          color: "#fff",
+                          background: "linear-gradient(135deg, #D65076, #ff80a8)",
+                          borderRadius: 10,
+                          padding: "2px 7px",
+                          fontFamily: FONT,
+                          lineHeight: 1.6,
+                          boxShadow: "0 1px 6px rgba(214,80,118,0.4)",
+                          whiteSpace: "nowrap",
+                          cursor: "pointer",
+                          transition: "opacity 0.15s",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+                        onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                      >
+                        ♪ 歌詞
+                      </span>
+                    )}
+                  </div>
 
                   {/* ジャンル + いいね数 + 再生数 */}
                   <div className="flex items-center gap-2 mt-0.5" style={{ minWidth: 0 }}>
