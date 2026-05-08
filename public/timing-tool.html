@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>🎵 LRC タイミングツール — 一日くらい大丈夫</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a14;
+    color: #ddd;
+    font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px 16px 180px; /* 下に固定バー分の余白 */
+  }
+  h1 { color: #D65076; font-size: 18px; margin-bottom: 4px; }
+  .subtitle { color: #555; font-size: 12px; margin-bottom: 16px; }
+
+  #player {
+    background: #12060e;
+    border: 1px solid rgba(214,80,118,0.2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    width: 100%;
+    max-width: 520px;
+    margin-bottom: 12px;
+  }
+  audio { width: 100%; margin-bottom: 10px; }
+  .timer {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    color: #D65076;
+    letter-spacing: 0.05em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #status {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 12px;
+    min-height: 20px;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .progress-bar-wrap {
+    width: 100%;
+    max-width: 520px;
+    background: #222;
+    border-radius: 4px;
+    height: 4px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #D65076, #ff80a0);
+    transition: width 0.3s linear;
+    width: 0%;
+  }
+
+  #lyrics-list {
+    width: 100%;
+    max-width: 520px;
+    background: #12060e;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .lyric-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    gap: 12px;
+    transition: background 0.2s;
+  }
+  .lyric-row:last-child { border-bottom: none; }
+  .lyric-row.active { background: rgba(214,80,118,0.18); }
+  .lyric-row.done { opacity: 0.45; }
+  .lyric-time {
+    font-size: 11px;
+    color: #D65076;
+    min-width: 54px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+  .lyric-text {
+    font-size: 13px;
+    color: #bbb;
+    flex: 1;
+    line-height: 1.5;
+  }
+  .lyric-row.active .lyric-text { color: #fff; font-weight: 700; font-size: 14px; }
+
+  /* ── 固定ボトムバー ── */
+  #bottom-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10,10,20,0.97);
+    border-top: 1px solid rgba(214,80,118,0.25);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    z-index: 999;
+    backdrop-filter: blur(12px);
+  }
+  .counter {
+    font-size: 12px;
+    color: #555;
+  }
+  .counter span { color: #D65076; font-weight: 700; }
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 520px;
+  }
+  #tap-btn {
+    flex: 3;
+    padding: 16px;
+    background: linear-gradient(135deg, #D65076, #c04068);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(214,80,118,0.4);
+    transition: transform 0.08s, box-shadow 0.08s;
+    letter-spacing: 0.05em;
+  }
+  #tap-btn:active { transform: scale(0.96); box-shadow: 0 2px 8px rgba(214,80,118,0.3); }
+  #tap-btn:disabled { background: #2a2a2a; box-shadow: none; color: #555; cursor: not-allowed; }
+
+  #undo-btn {
+    flex: 1;
+    padding: 16px 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    color: #aaa;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  #undo-btn:hover { background: rgba(255,255,255,0.1); }
+  #undo-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* ── 完了エリア ── */
+  #output-area {
+    display: none;
+    width: 100%;
+    max-width: 520px;
+  }
+  #output-area h2 { color: #D65076; font-size: 15px; margin-bottom: 10px; }
+  #lrc-output {
+    width: 100%;
+    background: #0f0f1a;
+    border: 1px solid rgba(214,80,118,0.3);
+    border-radius: 8px;
+    color: #adf;
+    font-family: monospace;
+    font-size: 12px;
+    padding: 12px;
+    height: 220px;
+    resize: vertical;
+    margin-bottom: 12px;
+  }
+  .output-btns { display: flex; gap: 10px; }
+  .btn-secondary {
+    flex: 1;
+    padding: 12px;
+    background: rgba(214,80,118,0.12);
+    border: 1px solid rgba(214,80,118,0.35);
+    border-radius: 8px;
+    color: #D65076;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn-secondary:hover { background: rgba(214,80,118,0.22); }
+</style>
+</head>
+<body>
+
+<h1>🎵 LRC タイミングツール</h1>
+<p class="subtitle">一日くらい大丈夫 — 各行の歌い始めにタップ</p>
+
+<div id="player">
+  <audio id="audio" controls preload="auto"></audio>
+  <div class="timer" id="timer">0:00.00</div>
+</div>
+
+<div id="status">▶ 曲を再生してから、各行の歌い始めにタップしてください</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-fill" id="progress-fill"></div>
+</div>
+
+<div id="lyrics-list"></div>
+
+<div id="output-area">
+  <h2>✅ 完成！LRCをダウンロードしてR2にアップしてください</h2>
+  <textarea id="lrc-output" readonly></textarea>
+  <div class="output-btns">
+    <button class="btn-secondary" onclick="copyLrc()">📋 コピー</button>
+    <button class="btn-secondary" onclick="downloadLrc()">⬇ ダウンロード</button>
+    <button class="btn-secondary" onclick="resetAll()">🔄 やり直し</button>
+  </div>
+</div>
+
+<!-- 常に画面下に固定されるバー -->
+<div id="bottom-bar">
+  <div class="counter">残り <span id="remaining">40</span> 行 &nbsp;／&nbsp; スペースキーでもタップ可</div>
+  <div class="btn-row">
+    <button id="undo-btn" onclick="undo()" disabled>↩ 1つ戻す</button>
+    <button id="tap-btn" onclick="tap()" disabled>⬇ タップ</button>
+  </div>
+</div>
+
+<script>
+const LYRICS = [
+  "1日くらい大丈夫 1日くらい大丈夫",
+  "我慢は しないで 我慢は しないで",
+  "ah ah アイスは 冷たいから",
+  "カロリーゼロ！ カロリーゼロ！",
+  "太らない 太らない",
+  "今日 1日くらい大丈夫",
+  "1日くらい大丈夫 1日くらい大丈夫",
+  "我慢は しないで 我慢は しないで",
+  "ah ah アイスは おいしいから",
+  "カロリーゼロ！ カロリーゼロ！",
+  "太らない 太らない",
+  "今日 1日くらい大丈夫",
+  "3個 食べても大丈夫 4個 食べても大丈夫",
+  "ah 4個も 5個も たいして変わらない",
+  "ah ah アイスは 冷たいから",
+  "カロリーゼロ！ カロリーゼロ！",
+  "太らない 太らない",
+  "今日 1日くらい大丈夫",
+  "1日くらい大丈夫 1日くらい大丈夫",
+  "人間 意外と 丈夫",
+  "アイスは溶けて消えるよ",
+  "ah ah アイスは 冷たいから",
+  "カロリーゼロ！ カロリーゼロ！",
+  "太らない 太らない",
+  "今日 1日くらい大丈夫",
+  "怒られない 怒られない",
+  "今日だけだから大丈夫",
+  "自分に甘く 自分に甘く",
+  "今日は 甘やかしてあげて",
+  "1日くらい大丈夫 1日くらい大丈夫",
+  "我慢は しないで 我慢は しないで",
+  "誰も見てない 誰も見てない",
+  "黙っていれば バレないから",
+  "1日くらい大丈夫 1日くらい大丈夫",
+  "ah ah アイスは おいしいから",
+  "カロリーゼロ！ カロリーゼロ！",
+  "太らない 太らない",
+  "今日 1日くらい大丈夫",
+  "1日くらい大丈夫 1日くらい大丈夫",
+  "本当はね 3日くらい大丈夫",
+];
+
+const FILENAME = '一日くらい大丈夫（V5）.mp3';
+const audio = document.getElementById('audio');
+// localhost の場合は本番URLを使う（日本語ファイル名のCORS問題を回避）
+// 本番(vercel.app)の場合は相対URLで同一オリジンアクセス
+const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const apiBase = isLocal ? 'https://ice-cream-music-box.vercel.app' : '';
+audio.src = apiBase + '/api/audio/' + encodeURIComponent(FILENAME);
+const timerEl = document.getElementById('timer');
+const statusEl = document.getElementById('status');
+const tapBtn = document.getElementById('tap-btn');
+const undoBtn = document.getElementById('undo-btn');
+const remainingEl = document.getElementById('remaining');
+const progressFill = document.getElementById('progress-fill');
+const listEl = document.getElementById('lyrics-list');
+const outputArea = document.getElementById('output-area');
+
+let timings = [];
+let currentIdx = 0;
+let rafId = null;
+
+function fmtTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  const cs = Math.floor((sec % 1) * 100);
+  return `${m}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}`;
+}
+function fmtLrc(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  const cs = Math.floor((sec % 1) * 100);
+  return `[${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}]`;
+}
+
+function updateTimer() {
+  timerEl.textContent = fmtTime(audio.currentTime);
+  rafId = requestAnimationFrame(updateTimer);
+}
+
+audio.addEventListener('play', () => {
+  if (!rafId) rafId = requestAnimationFrame(updateTimer);
+  if (currentIdx < LYRICS.length) tapBtn.disabled = false;
+  statusEl.textContent = currentIdx === 0
+    ? '▶ 再生中 — 最初の行の歌い始めでタップ！'
+    : `▶ 再生中 — 「${LYRICS[currentIdx].slice(0,12)}…」の頭でタップ`;
+});
+audio.addEventListener('pause', () => {
+  cancelAnimationFrame(rafId); rafId = null;
+});
+
+function buildList() {
+  listEl.innerHTML = '';
+  LYRICS.forEach((text, i) => {
+    const row = document.createElement('div');
+    row.className = 'lyric-row' +
+      (i === currentIdx ? ' active' : '') +
+      (i < currentIdx ? ' done' : '');
+    row.id = `row-${i}`;
+
+    const timeEl = document.createElement('span');
+    timeEl.className = 'lyric-time';
+    timeEl.id = `time-${i}`;
+    timeEl.textContent = timings[i] != null ? fmtLrc(timings[i]).slice(1,-1) : '--:--.--';
+
+    const textEl = document.createElement('span');
+    textEl.className = 'lyric-text';
+    textEl.textContent = text;
+
+    row.appendChild(timeEl);
+    row.appendChild(textEl);
+    listEl.appendChild(row);
+  });
+}
+buildList();
+
+function tap() {
+  if (currentIdx >= LYRICS.length || audio.paused) return;
+
+  const t = audio.currentTime;
+  timings[currentIdx] = t;
+
+  document.getElementById(`row-${currentIdx}`).classList.remove('active');
+  document.getElementById(`row-${currentIdx}`).classList.add('done');
+  document.getElementById(`time-${currentIdx}`).textContent = fmtLrc(t).slice(1,-1);
+
+  currentIdx++;
+  undoBtn.disabled = false;
+
+  const progress = currentIdx / LYRICS.length;
+  progressFill.style.width = `${progress * 100}%`;
+  remainingEl.textContent = LYRICS.length - currentIdx;
+
+  if (currentIdx < LYRICS.length) {
+    const nextRow = document.getElementById(`row-${currentIdx}`);
+    nextRow.classList.add('active');
+    nextRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    statusEl.textContent = `▶ ${currentIdx + 1} / ${LYRICS.length} — 「${LYRICS[currentIdx].slice(0,14)}…」の頭でタップ`;
+  } else {
+    finish();
+  }
+}
+
+function undo() {
+  if (currentIdx === 0) return;
+
+  // 完了状態を解除
+  outputArea.style.display = 'none';
+  tapBtn.disabled = audio.paused;
+
+  // 1つ前に戻す
+  const prevRow = document.getElementById(`row-${currentIdx}`);
+  if (prevRow) prevRow.classList.remove('active');
+
+  currentIdx--;
+  timings[currentIdx] = undefined;
+
+  const row = document.getElementById(`row-${currentIdx}`);
+  row.classList.remove('done');
+  row.classList.add('active');
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  document.getElementById(`time-${currentIdx}`).textContent = '--:--.--';
+
+  progressFill.style.width = `${currentIdx / LYRICS.length * 100}%`;
+  remainingEl.textContent = LYRICS.length - currentIdx;
+  statusEl.textContent = `↩ 戻しました — 「${LYRICS[currentIdx].slice(0,14)}…」をもう一度タップ`;
+
+  if (currentIdx === 0) undoBtn.disabled = true;
+}
+
+function finish() {
+  tapBtn.disabled = true;
+  audio.pause();
+  statusEl.textContent = '✅ 全行完了！LRCをダウンロードしてR2にアップしてください';
+
+  const lrc = LYRICS.map((text, i) => `${fmtLrc(timings[i] ?? 0)}${text}`).join('\n');
+  document.getElementById('lrc-output').value = lrc;
+  outputArea.style.display = 'block';
+  outputArea.scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyLrc() {
+  const ta = document.getElementById('lrc-output');
+  ta.select();
+  document.execCommand('copy');
+  alert('コピーしました！');
+}
+
+function downloadLrc() {
+  const content = document.getElementById('lrc-output').value;
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = FILENAME.replace(/\.[^.]+$/, '.lrc');
+  a.click();
+}
+
+function resetAll() {
+  timings = [];
+  currentIdx = 0;
+  tapBtn.disabled = audio.paused;
+  undoBtn.disabled = true;
+  outputArea.style.display = 'none';
+  progressFill.style.width = '0%';
+  remainingEl.textContent = LYRICS.length;
+  statusEl.textContent = '▶ 曲を再生してから、各行の歌い始めにタップしてください';
+  buildList();
+  audio.currentTime = 0;
+}
+
+// スペースキー
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'TEXTAREA') return;
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (!audio.paused) tap();
+  }
+  // Zキーで1つ戻す
+  if (e.code === 'KeyZ' && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault();
+    undo();
+  }
+});
+</script>
+</body>
+</html>

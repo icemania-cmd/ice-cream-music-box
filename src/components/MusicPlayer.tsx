@@ -292,7 +292,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
   } = engine;
 
   const elapsed = progress * duration;
-  const lyricsFilename = track.filename.replace(/\.[^.]+$/, "");
+  const lyricsFilename = track?.filename?.replace(/\.[^.]+$/, "") ?? "";
   const { lines: lyricsLines, currentIndex: lyricsIndex, status: lyricsStatus } = useLyrics(lyricsFilename, elapsed);
 
   // 起動時: URLの ?track=<id> を読んで該当曲を選択
@@ -415,6 +415,29 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
   const SILVER_BORDER = "1.5px solid #A0A0A0";
   const SILVER_SHADOW = "inset 0 2px 6px rgba(255,255,255,0.75), inset 0 -2px 4px rgba(0,0,0,0.18), 0 6px 24px rgba(0,0,0,0.2)";
 
+  // トラックがまだ読み込まれていない間はローディング表示
+  if (!track) return (
+    <div style={{
+      minHeight: "100dvh",
+      background: "linear-gradient(160deg, #FFF9F0 0%, #FFF3E0 50%, #FFF0D8 100%)",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 16,
+    }}>
+      <div style={{ fontSize: 48 }}>🍦</div>
+      <p style={{
+        color: "#B8800A",
+        fontSize: 14,
+        fontWeight: 700,
+        letterSpacing: "0.15em",
+        fontFamily: "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif",
+      }}>ICE CREAM MUSIC BOX</p>
+      <p style={{ color: "#8B6A4A", fontSize: 12, letterSpacing: "0.1em" }}>読み込み中…</p>
+    </div>
+  );
+
   return (
     <>
       {showNowPlaying && (
@@ -426,16 +449,18 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
           onPlay={play} onPause={pause} onNext={next} onPrev={prev} onSeek={seek}
         />
       )}
-      <LyricsModal
-        isOpen={showLyrics}
-        onClose={() => setShowLyrics(false)}
-        trackTitle={track.title}
-        lines={lyricsLines}
-        currentIndex={lyricsIndex}
-        status={lyricsStatus}
-        currentTime={elapsed}
-        duration={duration}
-      />
+      {track && (
+        <LyricsModal
+          isOpen={showLyrics}
+          onClose={() => setShowLyrics(false)}
+          trackTitle={track.title}
+          lines={lyricsLines}
+          currentIndex={lyricsIndex}
+          status={lyricsStatus}
+          currentTime={elapsed}
+          duration={duration}
+        />
+      )}
 
       {/* 全画面ラッパー */}
       <div style={{
@@ -872,27 +897,6 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
         </div>
       </div>
 
-      <style>{`
-        input[type=range]::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          width: 14px; height: 14px; border-radius: 50%;
-          background: #B8800A; border: 2px solid #FFF9F0;
-          box-shadow: 0 1px 4px rgba(184,128,10,0.5);
-          cursor: pointer;
-        }
-        input[type=range]::-moz-range-thumb {
-          width: 14px; height: 14px; border-radius: 50%;
-          background: #B8800A; border: 2px solid #FFF9F0; cursor: pointer;
-        }
-        /* ボリュームスライダーはカスタムつまみを使うので非表示 */
-        .volume-range-input::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          width: 28px; height: 28px; opacity: 0;
-        }
-        .volume-range-input::-moz-range-thumb {
-          width: 28px; height: 28px; opacity: 0; border: none;
-        }
-      `}</style>
     </>
   );
 }

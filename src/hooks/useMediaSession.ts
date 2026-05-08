@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { Track } from "@/lib/tracks";
 
 type Props = {
-  track: Track;
+  track: Track | undefined;
   isPlaying: boolean;
   duration: number;
   progress: number;
@@ -42,6 +42,7 @@ export function useMediaSession({
 
   // 曲が変わったらロック画面のメタデータを更新
   useEffect(() => {
+    if (!track) return;
     if (!("mediaSession" in navigator)) return;
     navigator.mediaSession.metadata = new MediaMetadata({
       title:  track.title,

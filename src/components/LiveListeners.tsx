@@ -77,12 +77,6 @@ export default function LiveListeners() {
       }}>
         いま <strong style={{ color: "#B8800A", fontSize: 13 }}>{count + getTimeOffset()}</strong> 名がアイスクリームミュージックを再生中
       </p>
-      <style>{`
-        @keyframes live-pulse {
-          0%, 100% { opacity: 1; }
-          50%       { opacity: 0.3; }
-        }
-      `}</style>
     </div>
   );
 }

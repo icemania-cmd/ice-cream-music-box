@@ -312,6 +312,33 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ============================================
+   ライブリスナー パルスアニメーション
+   ============================================ */
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* ============================================
+   ボリュームスライダー カスタムつまみ
+   ============================================ */
+.volume-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px; height: 28px; opacity: 0;
+}
+.volume-range-input::-moz-range-thumb {
+  width: 28px; height: 28px; opacity: 0; border: none;
+}
+
+/* ============================================
+   歌詞モーダル バックグロー
+   ============================================ */
+@keyframes lyricsGlow {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1; }
+}
+
+/* ============================================
    NOW PLAYING グロウアニメーション
    ============================================ */
 @keyframes now-playing-glow {

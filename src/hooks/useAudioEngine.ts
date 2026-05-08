@@ -233,7 +233,9 @@ export function useAudioEngine(initialTracks: Track[]) {
     audio.addEventListener("timeupdate",    onTimeUpdate);
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
     audio.addEventListener("ended",          onEnded);
-    audio.src = getAudioUrl(tracksRef.current[0].filename);
+    if (tracksRef.current.length > 0) {
+      audio.src = getAudioUrl(tracksRef.current[0].filename);
+    }
 
     // ─────────────────────────────────────────────────────
     // スクロール・タッチ・画面復帰時にAudioContextを再開する

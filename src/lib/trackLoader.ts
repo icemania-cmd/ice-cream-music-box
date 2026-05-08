@@ -94,8 +94,7 @@ export function writeTrackMeta(filename: string, data: Partial<TrackMeta>): void
 
 /**
  * サーバーコンポーネント用: 環境に応じて曲一覧を返す
- * - 本番（R2設定あり）: R2の tracks.json をフェッチ
- * - 開発（ローカル）: Dropboxフォルダをスキャン
+ * 優先度: R2の tracks.json → ローカルDropboxフォルダ → tracks.ts ハードコードリスト
  */
 export async function loadTracksServer(): Promise<Track[]> {
   const r2Base = process.env.NEXT_PUBLIC_R2_URL;
@@ -108,15 +107,20 @@ export async function loadTracksServer(): Promise<Track[]> {
       });
       if (!res.ok) {
         console.error("R2 tracks.json fetch failed:", res.status);
-        return [];
+      } else {
+        const list = (await res.json()) as Track[];
+        if (list.length > 0) return list;
       }
-      return (await res.json()) as Track[];
     } catch (e) {
       console.error("R2 tracks.json error:", e);
-      return [];
     }
   }
 
-  // 開発環境: ローカルファイルシステム
-  return loadTracksFromFolder();
+  // ローカルDropboxフォルダ（Windowsのみ）
+  const local = loadTracksFromFolder();
+  if (local.length > 0) return local;
+
+  // 最終フォールバック: tracks.ts のハードコードリスト
+  const { tracks } = await import("./tracks");
+  return tracks;
 }
