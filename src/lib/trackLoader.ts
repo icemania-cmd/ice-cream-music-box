@@ -104,7 +104,7 @@ function normalizeLyricsName(name: string): string {
   // 残った末尾の括弧サフィックスを全除去（（he-v5.5）等の汎用パターン）
   let prev = "";
   while (s !== prev) { prev = s; s = s.replace(/\s*[（(][^）)]+[）)]\s*$/, "").trim(); }
-  return s;
+  return s.toLowerCase();
 }
 
 /** R2 lyrics/ フォルダにある LRC の正規化名セットを取得 */

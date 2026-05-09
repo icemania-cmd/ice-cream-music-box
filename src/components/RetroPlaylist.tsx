@@ -20,7 +20,7 @@ function normalizeLyricsKey(name: string): string {
   // 残った末尾の括弧サフィックスを全除去（（he-v5.5）等の汎用パターン）
   let prev = "";
   while (s !== prev) { prev = s; s = s.replace(/\s*[（(][^）)]+[）)]\s*$/, "").trim(); }
-  return s;
+  return s.toLowerCase();
 }
 
 type RankEntry = { likes: number; plays: number; score: number };
