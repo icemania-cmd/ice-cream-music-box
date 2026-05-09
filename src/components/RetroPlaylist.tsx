@@ -11,7 +11,7 @@ const BRAND = "#D65076";
 
 /** 歌詞インデックスとトラックファイル名を正規化して比較するためのユーティリティ */
 function normalizeLyricsKey(name: string): string {
-  let s = name
+  let s = name.normalize("NFC")  // macOS NFD（べ=へ+゛）→ NFC（べ=べ）に統一
     .replace(/[〜～][^〜～]+[〜～]/g, "")
     .replace(/\s*[（(][Vv]\d+[^）)]*[）)]/g, "")
     .replace(/\s*[（(](Remastered|Re-?Recording)[^）)]*[）)]/gi, "")
@@ -184,15 +184,6 @@ export default function RetroPlaylist({
             const clientMatch = lyricsAvailable.has(trackBase) ||
               [...lyricsAvailable].some((lrc) => normalizeLyricsKey(lrc) === trackNorm);
             const hasLyrics = t.hasLyrics === true || clientMatch;
-            // デバッグ: くっそ曲のみログ出力
-            if (t.filename.includes("くっそ")) {
-              // lyricsAvailable の全エントリの文字コードを出力
-              const allEntryCodes = [...lyricsAvailable].map(l => ({
-                str: l,
-                codes: [...l].map(c => c.codePointAt(0)?.toString(16)).join(" "),
-              }));
-              console.log("[lyrics-debug-codes]", allEntryCodes);
-            }
 
             return (
               <button
