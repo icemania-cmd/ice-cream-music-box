@@ -10,12 +10,16 @@ import { createR2Client, R2_BUCKET, isR2Enabled } from "@/lib/r2";
 
 /** ファイル名から バージョン番号・サブタイトルを除いた正規化名を返す */
 export function normalizeLyricsName(name: string): string {
-  return name
+  let s = name
     .replace(/[〜～][^〜～]+[〜～]/g, "")                    // 〜サブタイトル〜（U+301C/U+FF5E 両対応）
     .replace(/\s*[（(][Vv]\d+[^）)]*[）)]/g, "")             // （V5）/ (V5) 等
     .replace(/\s*[（(](Remastered|Re-?Recording)[^）)]*[）)]/gi, "") // (Remastered_v5.5) 等
     .replace(/\s*_v\d+(\.\d+)?$/gi, "")                     // _v5 末尾
     .trim();
+  // 残った末尾の括弧サフィックスを全除去（（he-v5.5）等の汎用パターン）
+  let prev = "";
+  while (s !== prev) { prev = s; s = s.replace(/\s*[（(][^）)]+[）)]\s*$/, "").trim(); }
+  return s;
 }
 
 export async function GET() {

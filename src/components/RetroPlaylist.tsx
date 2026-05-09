@@ -11,12 +11,16 @@ const BRAND = "#D65076";
 
 /** 歌詞インデックスとトラックファイル名を正規化して比較するためのユーティリティ */
 function normalizeLyricsKey(name: string): string {
-  return name
+  let s = name
     .replace(/[〜～][^〜～]+[〜～]/g, "")
     .replace(/\s*[（(][Vv]\d+[^）)]*[）)]/g, "")
     .replace(/\s*[（(](Remastered|Re-?Recording)[^）)]*[）)]/gi, "")
     .replace(/\s*_v\d+(\.\d+)?$/gi, "")
     .trim();
+  // 残った末尾の括弧サフィックスを全除去（（he-v5.5）等の汎用パターン）
+  let prev = "";
+  while (s !== prev) { prev = s; s = s.replace(/\s*[（(][^）)]+[）)]\s*$/, "").trim(); }
+  return s;
 }
 
 type RankEntry = { likes: number; plays: number; score: number };
