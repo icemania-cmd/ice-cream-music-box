@@ -181,10 +181,22 @@ export default function RetroPlaylist({
             const trackNorm = normalizeLyricsKey(trackBase);
             // サーバー側が true なら即採用。false/undefined の場合もクライアント側フォールバックを確認
             // （ISRキャッシュが古く hasLyrics:false になっている場合に備える）
-            const hasLyrics = t.hasLyrics === true || (
-              lyricsAvailable.has(trackBase) ||
-              [...lyricsAvailable].some((lrc) => normalizeLyricsKey(lrc) === trackNorm)
-            );
+            const clientMatch = lyricsAvailable.has(trackBase) ||
+              [...lyricsAvailable].some((lrc) => normalizeLyricsKey(lrc) === trackNorm);
+            const hasLyrics = t.hasLyrics === true || clientMatch;
+            // デバッグ: くっそ曲のみログ出力
+            if (t.filename.includes("くっそ")) {
+              console.log("[lyrics-debug]", {
+                filename: t.filename,
+                trackBase,
+                trackNorm,
+                hasLyricsServer: t.hasLyrics,
+                lyricsAvailableSize: lyricsAvailable.size,
+                lyricsAvailableEntries: [...lyricsAvailable],
+                clientMatch,
+                hasLyrics,
+              });
+            }
 
             return (
               <button
