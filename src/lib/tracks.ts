@@ -7,6 +7,7 @@ export type Track = {
   color: string;
   filename: string; // 音声ファイル名
   gain: number; // RMS正規化係数 (基準: -16dBFS)
+  hasLyrics?: boolean; // R2に対応するLRCファイルが存在するか
 };
 
 export const tracks: Track[] = [

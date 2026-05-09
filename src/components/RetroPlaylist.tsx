@@ -20,7 +20,7 @@ type Props = {
   likedByMe: Set<number>;
   onToggleLike: (trackId: number) => void;
   rankingData: Record<number, RankEntry>;
-  lyricsAvailable: Set<string>;
+  lyricsAvailable: Set<string>; // フォールバック用（後方互換）
   onLyricsClick: (idx: number) => void; // 歌詞バッジクリック時
 };
 
@@ -161,17 +161,8 @@ export default function RetroPlaylist({
             const originalIdx = tracks.indexOf(t);
             const isCurrent = originalIdx === currentIndex;
             const playCount = playCounts[t.id] ?? t.plays;
-            const baseName = t.filename.replace(/\.[^.]+$/, "");
-            // 正規化マッチ: バージョン番号・サブタイトルを除去して比較
-            const normalizeName = (n: string) =>
-              n.replace(/〜[^〜]+〜/g, "")
-               .replace(/\s*（[Vv]\d+[^）]*）/g, "")
-               .replace(/\s*\([Vv]\d+[^)]*\)/g, "")
-               .trim();
-            const normalizedBase = normalizeName(baseName);
-            const hasLyrics =
-              lyricsAvailable.has(baseName) ||
-              [...lyricsAvailable].some((n) => normalizeName(n) === normalizedBase);
+            // サーバー側で計算済みの hasLyrics を優先、なければクライアント側フォールバック
+            const hasLyrics = t.hasLyrics ?? lyricsAvailable.has(t.filename.replace(/\.[^.]+$/, ""));
 
             return (
               <button
