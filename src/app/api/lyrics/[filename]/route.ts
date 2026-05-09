@@ -51,24 +51,11 @@ function stripParenSuffix(s: string): string {
   return cur;
 }
 
-/** 各単語の先頭を大文字化（Title Case） */
-function toTitleCase(s: string): string {
-  return s.replace(/\b[a-z]/g, (c) => c.toUpperCase());
-}
-
 /** ファイル名バリエーションを生成（優先度順） */
 function lrcCandidates(name: string): string[] {
   const seen = new Set<string>();
-  // 元の文字列 + Title Case 版の両方を登録
-  const add = (s: string) => {
-    const t = s.trim();
-    if (!t) return;
-    seen.add(t);
-    seen.add(toTitleCase(t));
-  };
+  const add = (s: string) => { const t = s.trim(); if (t) seen.add(t); };
 
-  // macOS NFD（べ=へ+゛）→ NFC（べ=べ）に統一してから候補生成
-  name = name.normalize("NFC");
   add(name);
   add(stripWave(name));
   add(stripVer(name));

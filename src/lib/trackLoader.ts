@@ -95,7 +95,7 @@ export function writeTrackMeta(filename: string, data: Partial<TrackMeta>): void
 /** ファイル名からバージョン・サブタイトルを除いた正規化名を返す
  * 〜 は U+301C と U+FF5E の2種類が存在するため両方に対応 */
 function normalizeLyricsName(name: string): string {
-  let s = name.normalize("NFC")                              // macOS NFD → NFC 統一
+  let s = name
     .replace(/[〜～][^〜～]+[〜～]/g, "")                    // 〜サブタイトル〜（両Unicodeに対応）
     .replace(/\s*[（(][Vv]\d+[^）)]*[）)]/g, "")             // （V5）または (V5)
     .replace(/\s*[（(](Remastered|Re-?Recording)[^）)]*[）)]/gi, "") // (Remastered_v5.5) 等
@@ -104,7 +104,7 @@ function normalizeLyricsName(name: string): string {
   // 残った末尾の括弧サフィックスを全除去（（he-v5.5）等の汎用パターン）
   let prev = "";
   while (s !== prev) { prev = s; s = s.replace(/\s*[（(][^）)]+[）)]\s*$/, "").trim(); }
-  return s.toLowerCase();
+  return s;
 }
 
 /** R2 lyrics/ フォルダにある LRC の正規化名セットを取得 */
