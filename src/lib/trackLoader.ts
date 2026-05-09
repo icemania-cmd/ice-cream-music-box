@@ -92,12 +92,12 @@ export function writeTrackMeta(filename: string, data: Partial<TrackMeta>): void
   fs.writeFileSync(META_FILE, JSON.stringify(current, null, 2), "utf-8");
 }
 
-/** ファイル名からバージョン・サブタイトルを除いた正規化名を返す */
+/** ファイル名からバージョン・サブタイトルを除いた正規化名を返す
+ * 〜 は U+301C と U+FF5E の2種類が存在するため両方に対応 */
 function normalizeLyricsName(name: string): string {
   return name
-    .replace(/〜[^〜]+〜/g, "")
-    .replace(/\s*（[Vv]\d+[^）]*）/g, "")
-    .replace(/\s*\([Vv]\d+[^)]*\)/g, "")
+    .replace(/[〜～][^〜～]+[〜～]/g, "")   // 〜サブタイトル〜（両Unicodeに対応）
+    .replace(/\s*[（(][Vv]\d+[^）)]*[）)]/g, "") // （V5）または (V5)
     .replace(/\s*_v\d+(\.\d+)?$/gi, "")
     .trim();
 }
