@@ -92,6 +92,49 @@ export function writeTrackMeta(filename: string, data: Partial<TrackMeta>): void
   fs.writeFileSync(META_FILE, JSON.stringify(current, null, 2), "utf-8");
 }
 
+/** ファイル名からバージョン・サブタイトルを除いた正規化名を返す */
+function normalizeLyricsName(name: string): string {
+  return name
+    .replace(/〜[^〜]+〜/g, "")
+    .replace(/\s*（[Vv]\d+[^）]*）/g, "")
+    .replace(/\s*\([Vv]\d+[^)]*\)/g, "")
+    .replace(/\s*_v\d+(\.\d+)?$/gi, "")
+    .trim();
+}
+
+/** R2 lyrics/ フォルダにある LRC の正規化名セットを取得 */
+async function fetchLyricsNormalizedSet(): Promise<Set<string>> {
+  try {
+    const { createR2Client, R2_BUCKET } = await import("./r2");
+    const { ListObjectsV2Command } = await import("@aws-sdk/client-s3");
+    const s3 = createR2Client();
+    const result = await s3.send(
+      new ListObjectsV2Command({ Bucket: R2_BUCKET(), Prefix: "lyrics/" })
+    );
+    const names = (result.Contents ?? [])
+      .map((o) => o.Key ?? "")
+      .filter((k) => k.endsWith(".lrc"))
+      .map((k) =>
+        normalizeLyricsName(k.replace(/^lyrics\//, "").replace(/\.lrc$/, ""))
+      );
+    return new Set(names);
+  } catch {
+    return new Set();
+  }
+}
+
+/** トラックリストに hasLyrics フィールドを付与 */
+async function annotateHasLyrics(tracks: Track[]): Promise<Track[]> {
+  const lyricsSet = await fetchLyricsNormalizedSet();
+  if (lyricsSet.size === 0) return tracks;
+  return tracks.map((t) => ({
+    ...t,
+    hasLyrics: lyricsSet.has(
+      normalizeLyricsName(t.filename.replace(/\.[^.]+$/, ""))
+    ),
+  }));
+}
+
 /**
  * サーバーコンポーネント用: 環境に応じて曲一覧を返す
  * 優先度: R2の tracks.json → ローカルDropboxフォルダ → tracks.ts ハードコードリスト
@@ -109,7 +152,7 @@ export async function loadTracksServer(): Promise<Track[]> {
         console.error("R2 tracks.json fetch failed:", res.status);
       } else {
         const list = (await res.json()) as Track[];
-        if (list.length > 0) return list;
+        if (list.length > 0) return annotateHasLyrics(list);
       }
     } catch (e) {
       console.error("R2 tracks.json error:", e);
