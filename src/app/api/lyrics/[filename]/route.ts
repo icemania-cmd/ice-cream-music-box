@@ -30,12 +30,16 @@ const WAVE_RE = /[〜～][^〜～]+[〜～]/g;
 const WAVE_SEARCH = /[〜～]/;
 // （ = U+FF08, ） = U+FF09
 const VER_FULL = /\s*[（(][Vv]\d+[^）)]*[）)]/g;
+const REMASTER_RE = /\s*[（(](Remastered|Re-?Recording)[^）)]*[）)]/gi;
 
 function stripWave(s: string): string {
   return s.replace(WAVE_RE, "").trim();
 }
 function stripVer(s: string): string {
   return s.replace(VER_FULL, "").trim();
+}
+function stripRemaster(s: string): string {
+  return s.replace(REMASTER_RE, "").trim();
 }
 
 /** ファイル名バリエーションを生成（優先度順） */
@@ -46,8 +50,14 @@ function lrcCandidates(name: string): string[] {
   add(name);
   add(stripWave(name));
   add(stripVer(name));
+  add(stripRemaster(name));
   add(stripVer(stripWave(name)));
   add(stripWave(stripVer(name)));
+  add(stripRemaster(stripWave(name)));
+  add(stripVer(stripRemaster(name)));
+  add(stripRemaster(stripVer(name)));
+  add(stripVer(stripRemaster(stripWave(name))));
+  add(stripRemaster(stripVer(stripWave(name))));
 
   // 〜 以降を全カット（末尾サブタイトルパターン）
   const waveIdx = name.search(WAVE_SEARCH);
@@ -55,6 +65,8 @@ function lrcCandidates(name: string): string[] {
     const prefix = name.slice(0, waveIdx).trim();
     add(prefix);
     add(stripVer(prefix));
+    add(stripRemaster(prefix));
+    add(stripVer(stripRemaster(prefix)));
   }
 
   return [...seen];

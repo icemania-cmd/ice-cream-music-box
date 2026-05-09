@@ -9,6 +9,16 @@ const PAGE_SIZE = 10;
 const FONT = "var(--font-nunito), 'Nunito', 'M PLUS Rounded 1c', sans-serif";
 const BRAND = "#D65076";
 
+/** 歌詞インデックスとトラックファイル名を正規化して比較するためのユーティリティ */
+function normalizeLyricsKey(name: string): string {
+  return name
+    .replace(/[〜～][^〜～]+[〜～]/g, "")
+    .replace(/\s*[（(][Vv]\d+[^）)]*[）)]/g, "")
+    .replace(/\s*[（(](Remastered|Re-?Recording)[^）)]*[）)]/gi, "")
+    .replace(/\s*_v\d+(\.\d+)?$/gi, "")
+    .trim();
+}
+
 type RankEntry = { likes: number; plays: number; score: number };
 
 type Props = {
@@ -162,7 +172,13 @@ export default function RetroPlaylist({
             const isCurrent = originalIdx === currentIndex;
             const playCount = playCounts[t.id] ?? t.plays;
             // サーバー側で計算済みの hasLyrics を優先、なければクライアント側フォールバック
-            const hasLyrics = t.hasLyrics ?? lyricsAvailable.has(t.filename.replace(/\.[^.]+$/, ""));
+            // フォールバックは正規化比較（(Remastered_v5.5) 等のバリエーションに対応）
+            const trackBase = t.filename.replace(/\.[^.]+$/, "");
+            const trackNorm = normalizeLyricsKey(trackBase);
+            const hasLyrics = t.hasLyrics ?? (
+              lyricsAvailable.has(trackBase) ||
+              [...lyricsAvailable].some((lrc) => normalizeLyricsKey(lrc) === trackNorm)
+            );
 
             return (
               <button
