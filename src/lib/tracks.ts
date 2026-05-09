@@ -173,7 +173,7 @@ export const tracks: Track[] = [
   },
   {
     id: 17,
-    title: "Foolish Man",
+    title: "Foolish man",
     artist: "AI-SONG",
     genre: "Rock",
     plays: 2100,
