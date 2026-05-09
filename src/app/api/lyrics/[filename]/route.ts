@@ -56,8 +56,6 @@ function lrcCandidates(name: string): string[] {
   const seen = new Set<string>();
   const add = (s: string) => { const t = s.trim(); if (t) seen.add(t); };
 
-  // macOS NFD（べ=へ+゛）→ NFC（べ=べ）に統一してから候補生成
-  name = name.normalize("NFC");
   add(name);
   add(stripWave(name));
   add(stripVer(name));
