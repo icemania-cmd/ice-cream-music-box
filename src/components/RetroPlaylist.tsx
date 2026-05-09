@@ -179,7 +179,9 @@ export default function RetroPlaylist({
             // フォールバックは正規化比較（(Remastered_v5.5) 等のバリエーションに対応）
             const trackBase = t.filename.replace(/\.[^.]+$/, "");
             const trackNorm = normalizeLyricsKey(trackBase);
-            const hasLyrics = t.hasLyrics ?? (
+            // サーバー側が true なら即採用。false/undefined の場合もクライアント側フォールバックを確認
+            // （ISRキャッシュが古く hasLyrics:false になっている場合に備える）
+            const hasLyrics = t.hasLyrics === true || (
               lyricsAvailable.has(trackBase) ||
               [...lyricsAvailable].some((lrc) => normalizeLyricsKey(lrc) === trackNorm)
             );
