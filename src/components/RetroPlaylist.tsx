@@ -186,18 +186,12 @@ export default function RetroPlaylist({
             const hasLyrics = t.hasLyrics === true || clientMatch;
             // デバッグ: くっそ曲のみログ出力
             if (t.filename.includes("くっそ")) {
-              const lrcEntry = [...lyricsAvailable].find(l => l.includes("くっそ"));
-              const lrcNorm = lrcEntry ? normalizeLyricsKey(lrcEntry) : "(none)";
-              console.log("[lyrics-debug]", {
-                filename: t.filename,
-                trackNorm,
-                trackNormCodes: [...trackNorm].map(c => c.codePointAt(0)?.toString(16)).join(" "),
-                lrcEntry,
-                lrcNorm,
-                lrcNormCodes: lrcEntry ? [...lrcNorm].map(c => c.codePointAt(0)?.toString(16)).join(" ") : "(none)",
-                equal: trackNorm === lrcNorm,
-                clientMatch,
-              });
+              // lyricsAvailable の全エントリの文字コードを出力
+              const allEntryCodes = [...lyricsAvailable].map(l => ({
+                str: l,
+                codes: [...l].map(c => c.codePointAt(0)?.toString(16)).join(" "),
+              }));
+              console.log("[lyrics-debug-codes]", allEntryCodes);
             }
 
             return (
