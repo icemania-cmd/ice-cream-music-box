@@ -95,7 +95,7 @@ export function writeTrackMeta(filename: string, data: Partial<TrackMeta>): void
 /** ファイル名からバージョン・サブタイトルを除いた正規化名を返す
  * 〜 は U+301C と U+FF5E の2種類が存在するため両方に対応 */
 function normalizeLyricsName(name: string): string {
-  let s = name
+  let s = name.normalize("NFC")                              // macOS NFD → NFC 統一
     .replace(/[〜～][^〜～]+[〜～]/g, "")                    // 〜サブタイトル〜（両Unicodeに対応）
     .replace(/\s*[（(][Vv]\d+[^）)]*[）)]/g, "")             // （V5）または (V5)
     .replace(/\s*[（(](Remastered|Re-?Recording)[^）)]*[）)]/gi, "") // (Remastered_v5.5) 等
@@ -132,12 +132,15 @@ async function fetchLyricsNormalizedSet(): Promise<Set<string>> {
 async function annotateHasLyrics(tracks: Track[]): Promise<Track[]> {
   const lyricsSet = await fetchLyricsNormalizedSet();
   if (lyricsSet.size === 0) return tracks;
-  return tracks.map((t) => ({
-    ...t,
-    hasLyrics: lyricsSet.has(
-      normalizeLyricsName(t.filename.replace(/\.[^.]+$/, ""))
-    ),
-  }));
+  // 大文字小文字を吸収するためのローワーケースセット（"Flavor Forever" vs "flavor forever" 等）
+  const lyricsSetLower = new Set([...lyricsSet].map((s) => s.toLowerCase()));
+  return tracks.map((t) => {
+    const norm = normalizeLyricsName(t.filename.replace(/\.[^.]+$/, ""));
+    return {
+      ...t,
+      hasLyrics: lyricsSet.has(norm) || lyricsSetLower.has(norm.toLowerCase()),
+    };
+  });
 }
 
 /**
