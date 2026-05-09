@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>🎵 LRC タイミングツール — Flavor Forever</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a14; color: #ddd; font-family: 'Hiragino Maru Gothic ProN', sans-serif; padding-bottom: 180px; }
+  .scroll-area { max-width: 560px; margin: 0 auto; padding: 24px 16px 0; }
+  h1 { color: #D2691E; font-size: 18px; margin-bottom: 4px; }
+  .subtitle { color: #555; font-size: 12px; margin-bottom: 16px; }
+  #player { background: #120a06; border: 1px solid rgba(210,105,30,0.2); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
+  .timer { text-align: center; font-size: 32px; font-weight: 700; color: #D2691E; font-variant-numeric: tabular-nums; }
+  .progress-bar-wrap { background: #222; border-radius: 4px; height: 4px; margin-bottom: 12px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #D2691E, #f0903a); transition: width 0.3s linear; width: 0%; }
+
+  #lyrics-list { background: #120a06; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+  .lyric-row {
+    display: flex; align-items: center; padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04); gap: 12px;
+    transition: background 0.15s;
+    cursor: default;
+  }
+  .lyric-row:last-child { border-bottom: none; }
+  .lyric-row.active { background: rgba(210,105,30,0.22); }
+  .lyric-row.done {
+    opacity: 0.55;
+    cursor: pointer;
+  }
+  .lyric-row.done:hover { background: rgba(210,105,30,0.10); opacity: 0.9; }
+  .lyric-row.done:hover .lyric-time::after { content: " ↩"; font-size: 10px; }
+  .lyric-idx { font-size: 10px; color: #444; min-width: 20px; text-align: right; font-variant-numeric: tabular-nums; }
+  .lyric-time { font-size: 11px; color: #D2691E; min-width: 60px; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .lyric-text { font-size: 13px; color: #ccc; flex: 1; line-height: 1.5; }
+  .lyric-row.active .lyric-text { color: #fff; font-weight: 700; }
+
+  .hint-row { font-size: 10px; color: #444; text-align: center; padding: 6px; }
+
+  #output-area { display: none; margin-bottom: 20px; }
+  #output-area h2 { color: #D2691E; font-size: 15px; margin-bottom: 10px; }
+  #lrc-output { width: 100%; background: #0f0f1a; border: 1px solid rgba(210,105,30,0.3); border-radius: 8px; color: #adf; font-family: monospace; font-size: 12px; padding: 12px; height: 260px; resize: vertical; margin-bottom: 12px; }
+  .output-btns { display: flex; gap: 10px; }
+  .btn-secondary { flex: 1; padding: 12px; background: rgba(210,105,30,0.15); border: 1px solid rgba(210,105,30,0.4); border-radius: 8px; color: #D2691E; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .btn-secondary:hover { background: rgba(210,105,30,0.25); }
+
+  #fixed-footer {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(10,10,20,0.97);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(210,105,30,0.2);
+    padding: 10px 16px 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 100;
+  }
+  #next-line { font-size: 13px; color: #D2691E; font-weight: 700; text-align: center; min-height: 20px; letter-spacing: 0.02em; max-width: 520px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #status { font-size: 11px; color: #555; text-align: center; }
+  .footer-btns { display: flex; gap: 10px; width: 100%; max-width: 520px; }
+  #tap-btn {
+    flex: 1; padding: 15px;
+    background: linear-gradient(135deg, #D2691E, #b85a18);
+    border: none; border-radius: 12px; color: #fff; font-size: 17px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 4px 20px rgba(210,105,30,0.4);
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+  #tap-btn:active { transform: scale(0.97); box-shadow: 0 2px 10px rgba(210,105,30,0.3); }
+  #tap-btn:disabled { background: #2a2a3a; box-shadow: none; color: #444; cursor: not-allowed; }
+  #undo-btn {
+    padding: 15px 18px; background: transparent;
+    border: 1px solid #444; border-radius: 12px;
+    color: #888; font-size: 14px; cursor: pointer;
+    transition: border-color 0.15s, color 0.15s; white-space: nowrap;
+  }
+  #undo-btn:hover { border-color: #D2691E; color: #D2691E; }
+  .hint { font-size: 10px; color: #333; }
+</style>
+</head>
+<body>
+<div class="scroll-area">
+  <h1>🎵 LRC タイミングツール</h1>
+  <p class="subtitle">Flavor Forever — 各行の歌い始めでタップ　／　タイム済み行をクリックしてやり直し可</p>
+
+  <div id="player">
+    <div style="margin-bottom:10px;">
+      <label style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:rgba(210,105,30,0.12);border:1.5px dashed rgba(210,105,30,0.4);border-radius:8px;cursor:pointer;font-size:13px;color:#D2691E;font-weight:700;">
+        📂 音楽ファイルを選択
+        <input type="file" accept="audio/*" id="file-input" style="display:none" onchange="loadFile(this)">
+      </label>
+    </div>
+    <audio id="audio" controls preload="auto" style="width:100%;margin-bottom:8px;"></audio>
+    <div class="timer" id="timer">0:00.00</div>
+  </div>
+
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <div class="hint-row">💡 タイム済みの行をクリック → その行からやり直し</div>
+  <div id="lyrics-list"></div>
+
+  <div id="output-area">
+    <h2>✅ 完成！LRCをコピーして保存してください</h2>
+    <textarea id="lrc-output" readonly></textarea>
+    <div class="output-btns">
+      <button class="btn-secondary" onclick="copyLrc()">📋 コピー</button>
+      <button class="btn-secondary" onclick="downloadLrc()">⬇ ダウンロード</button>
+      <button class="btn-secondary" onclick="resetAll()">🔄 やり直し</button>
+    </div>
+  </div>
+</div>
+
+<div id="fixed-footer">
+  <div id="next-line">▶ 再生してからタップ開始</div>
+  <div id="status">残り <span id="remaining">70</span> 行　スペースキーでも可</div>
+  <div class="footer-btns">
+    <button id="undo-btn" onclick="undo()">↩ 1行戻す</button>
+    <button id="tap-btn" onclick="tap()" disabled>⬇ タップ</button>
+  </div>
+  <div class="hint">スペース: タップ　⌘Z / Ctrl+Z: 1行戻す　行クリック: その行に戻る</div>
+</div>
+
+<script>
+const LYRICS = [
+  "Tick-tock, drip-drop,",
+  "3, 2, 1… bite!",
+  "列に並んで悩んでる",
+  "バニラ？ チョコ？ それともミント？",
+  "通知音で ふと気づく",
+  "その一秒が大事なのに",
+  "振り返れば いつもそうだった",
+  "「あとででいいや」で",
+  "すべて素通り",
+  "Freeze the moment?",
+  "それでもきっと 何も変わらない",
+  "迷いはチャンスを",
+  "失うことを知った",
+  "早く食べて！ さぁ急いで！",
+  "とけちゃう！ とけちゃう！",
+  "Hurry up, take a bite—",
+  "now or never!",
+  "One life, one scoop,",
+  "flavor forever",
+  "早く食べて！ さぁ急いで！",
+  "とけちゃう！ とけちゃう！",
+  "今日という日を",
+  "ずっと忘れないように",
+  "夏祭りで学んだんだ",
+  "アイスは待ってくれないこと",
+  "手のひらからこぼれたシズク",
+  "舌には残るストーリー",
+  "愛だってそう 温度が大事",
+  "冷たすぎると",
+  "感じられないよね？",
+  "Don't overthink it—",
+  "life is limited edition",
+  "覚悟しないと",
+  "何も決められない",
+  "早く食べて！ さぁ急いで！",
+  "とけちゃう！ とけちゃう！",
+  "Hurry up, take a bite—",
+  "make it your flavor",
+  "Now or never,",
+  "tiny forever",
+  "早く食べて！ さぁ急いで！",
+  "とけちゃう！ とけちゃう！",
+  "ため息より先に",
+  "笑顔をつくろうよ",
+  "もし時間を止められたら？",
+  "—なんて無駄なことさ",
+  "But we can slow it down—",
+  "君と分け合えば",
+  "Half & half, sweet & bitter",
+  "分かち合うほど",
+  "記憶は深くなる",
+  "Say \"Hey!\"—Hey!",
+  "Say \"Bite!\"—Bite!",
+  "Tick-tock—Don't stop!",
+  "思い出の味！",
+  "早く食べて！ さぁ急いで！",
+  "とけちゃう！ とけちゃう！",
+  "Hurry up, take a bite—",
+  "kiss the sunshine",
+  "One life, one scoop,",
+  "this is your sign",
+  "早く食べて！ さぁ急いで！",
+  "とけちゃう！ とけちゃう！",
+  "後回しの代償は",
+  "背負いきれない",
+  "アイスカップの底の",
+  "一滴まで",
+  "Thank you, today—",
+  "See you, someday",
+  "でも今は…早く食べて。",
+];
+
+const audio = document.getElementById('audio');
+const timerEl = document.getElementById('timer');
+const nextLineEl = document.getElementById('next-line');
+const tapBtn = document.getElementById('tap-btn');
+const remainingEl = document.getElementById('remaining');
+const progressFill = document.getElementById('progress-fill');
+const listEl = document.getElementById('lyrics-list');
+const outputArea = document.getElementById('output-area');
+
+let timings = [], currentIdx = 0, rafId = null;
+
+function loadFile(input) {
+  if (!input.files[0]) return;
+  audio.src = URL.createObjectURL(input.files[0]);
+  audio.load();
+  nextLineEl.textContent = '▶ 再生してからタップ開始';
+}
+function fmtTime(sec) {
+  const m = Math.floor(sec / 60), s = Math.floor(sec % 60), cs = Math.floor((sec % 1) * 100);
+  return `${m}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}`;
+}
+function fmtLrc(sec) {
+  const m = Math.floor(sec / 60), s = Math.floor(sec % 60), cs = Math.floor((sec % 1) * 100);
+  return `[${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}]`;
+}
+function updateNextLine() {
+  nextLineEl.textContent = currentIdx < LYRICS.length
+    ? `▶ 次 (${currentIdx + 1}/${LYRICS.length}): ${LYRICS[currentIdx]}`
+    : '✅ 全行完了！';
+}
+function updateTimer() { timerEl.textContent = fmtTime(audio.currentTime); rafId = requestAnimationFrame(updateTimer); }
+
+audio.addEventListener('play', () => {
+  rafId = rafId || requestAnimationFrame(updateTimer);
+  tapBtn.disabled = false;
+  updateNextLine();
+});
+audio.addEventListener('pause', () => { cancelAnimationFrame(rafId); rafId = null; });
+
+function buildList() {
+  listEl.innerHTML = '';
+  LYRICS.forEach((text, i) => {
+    const row = document.createElement('div');
+    row.className = 'lyric-row' + (i === currentIdx ? ' active' : '') + (i < currentIdx ? ' done' : '');
+    row.id = `row-${i}`;
+
+    if (i < currentIdx) {
+      row.title = `クリックで行 ${i + 1} に戻る`;
+      row.addEventListener('click', () => jumpTo(i));
+    }
+
+    const idxEl = document.createElement('span');
+    idxEl.className = 'lyric-idx';
+    idxEl.textContent = String(i + 1);
+
+    const timeEl = document.createElement('span');
+    timeEl.className = 'lyric-time';
+    timeEl.id = `time-${i}`;
+    timeEl.textContent = timings[i] != null ? fmtLrc(timings[i]).slice(1,-1) : '--:--.--';
+
+    const textEl = document.createElement('span');
+    textEl.className = 'lyric-text';
+    textEl.textContent = text;
+
+    row.appendChild(idxEl); row.appendChild(timeEl); row.appendChild(textEl);
+    listEl.appendChild(row);
+  });
+  updateNextLine();
+}
+buildList();
+
+function jumpTo(idx) {
+  for (let i = idx; i < LYRICS.length; i++) timings[i] = undefined;
+  for (let i = idx; i < LYRICS.length; i++) {
+    const row = document.getElementById(`row-${i}`);
+    if (!row) continue;
+    row.classList.remove('done', 'active');
+    document.getElementById(`time-${i}`).textContent = '--:--.--';
+  }
+  currentIdx = idx;
+  progressFill.style.width = `${(currentIdx / LYRICS.length) * 100}%`;
+  remainingEl.textContent = LYRICS.length - currentIdx;
+  outputArea.style.display = 'none';
+  tapBtn.disabled = audio.paused;
+  buildList();
+  const activeRow = document.getElementById(`row-${currentIdx}`);
+  if (activeRow) activeRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function tap() {
+  if (currentIdx >= LYRICS.length || audio.paused) return;
+  const t = audio.currentTime;
+  timings[currentIdx] = t;
+  const row = document.getElementById(`row-${currentIdx}`);
+  if (row) { row.classList.remove('active'); row.classList.add('done'); }
+  document.getElementById(`time-${currentIdx}`).textContent = fmtLrc(t).slice(1,-1);
+  currentIdx++;
+  progressFill.style.width = `${(currentIdx / LYRICS.length) * 100}%`;
+  remainingEl.textContent = LYRICS.length - currentIdx;
+  if (currentIdx < LYRICS.length) {
+    buildList();
+    const next = document.getElementById(`row-${currentIdx}`);
+    if (next) next.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    updateNextLine();
+  } else {
+    finish();
+  }
+}
+
+function undo() {
+  if (currentIdx === 0) return;
+  currentIdx--;
+  timings[currentIdx] = undefined;
+  const row = document.getElementById(`row-${currentIdx}`);
+  if (row) { row.classList.remove('done'); row.classList.add('active'); row.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  document.getElementById(`time-${currentIdx}`).textContent = '--:--.--';
+  if (currentIdx + 1 < LYRICS.length) {
+    const next = document.getElementById(`row-${currentIdx+1}`);
+    if (next) next.classList.remove('active');
+  }
+  progressFill.style.width = `${(currentIdx / LYRICS.length) * 100}%`;
+  remainingEl.textContent = LYRICS.length - currentIdx;
+  updateNextLine();
+  outputArea.style.display = 'none';
+  tapBtn.disabled = audio.paused;
+  buildList();
+}
+
+function finish() {
+  tapBtn.disabled = true;
+  nextLineEl.textContent = '✅ 全行完了！';
+  audio.pause();
+  document.getElementById('lrc-output').value = LYRICS.map((t, i) => `${fmtLrc(timings[i] ?? 0)}${t}`).join('\n');
+  outputArea.style.display = 'block';
+  outputArea.scrollIntoView({ behavior: 'smooth' });
+}
+function copyLrc() {
+  const ta = document.getElementById('lrc-output'); ta.select(); document.execCommand('copy');
+  nextLineEl.textContent = '📋 コピーしました！';
+}
+function downloadLrc() {
+  const blob = new Blob([document.getElementById('lrc-output').value], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'flavor forever.lrc'; a.click();
+}
+function resetAll() {
+  timings = []; currentIdx = 0; tapBtn.disabled = true;
+  outputArea.style.display = 'none'; progressFill.style.width = '0%';
+  remainingEl.textContent = LYRICS.length; buildList(); audio.currentTime = 0;
+}
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && e.target !== audio) { e.preventDefault(); if (!audio.paused) tap(); }
+  if (e.code === 'KeyZ' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); undo(); }
+});
+</script>
+</body>
+</html>

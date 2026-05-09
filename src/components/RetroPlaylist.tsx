@@ -11,7 +11,7 @@ const BRAND = "#D65076";
 
 /** 歌詞インデックスとトラックファイル名を正規化して比較するためのユーティリティ */
 function normalizeLyricsKey(name: string): string {
-  let s = name
+  let s = name.normalize("NFC")  // macOS NFD（べ=へ+゛）→ NFC（べ=べ）に統一
     .replace(/[〜～][^〜～]+[〜～]/g, "")
     .replace(/\s*[（(][Vv]\d+[^）)]*[）)]/g, "")
     .replace(/\s*[（(](Remastered|Re-?Recording)[^）)]*[）)]/gi, "")
@@ -179,10 +179,11 @@ export default function RetroPlaylist({
             // フォールバックは正規化比較（(Remastered_v5.5) 等のバリエーションに対応）
             const trackBase = t.filename.replace(/\.[^.]+$/, "");
             const trackNorm = normalizeLyricsKey(trackBase);
-            const hasLyrics = t.hasLyrics ?? (
-              lyricsAvailable.has(trackBase) ||
-              [...lyricsAvailable].some((lrc) => normalizeLyricsKey(lrc) === trackNorm)
-            );
+            // サーバー側が true なら即採用。false/undefined の場合もクライアント側フォールバックを確認
+            // （ISRキャッシュが古く hasLyrics:false になっている場合に備える）
+            const clientMatch = lyricsAvailable.has(trackBase) ||
+              [...lyricsAvailable].some((lrc) => normalizeLyricsKey(lrc) === trackNorm);
+            const hasLyrics = t.hasLyrics === true || clientMatch;
 
             return (
               <button

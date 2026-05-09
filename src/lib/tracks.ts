@@ -133,7 +133,7 @@ export const tracks: Track[] = [
   },
   {
     id: 13,
-    title: "flavor forever",
+    title: "Flavor Forever",
     artist: "AI-SONG",
     genre: "R&B",
     plays: 2540,
@@ -173,7 +173,7 @@ export const tracks: Track[] = [
   },
   {
     id: 17,
-    title: "Foolish man",
+    title: "Foolish Man",
     artist: "AI-SONG",
     genre: "Rock",
     plays: 2100,
