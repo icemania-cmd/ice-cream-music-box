@@ -16,11 +16,12 @@ type Props = {
   allTracks: Track[];
   rankingData: Record<number, RankEntry>;
   likedByMe: Set<number>;
+  onLyricsClick: (idx: number) => void;
 };
 
 export default function RetroRankings({
   tracks, currentTrackId, onSelect, allTracks,
-  rankingData, likedByMe,
+  rankingData, likedByMe, onLyricsClick,
 }: Props) {
   const ranked = [...tracks].sort(
     (a, b) => (rankingData[b.id]?.score ?? 0) - (rankingData[a.id]?.score ?? 0)
@@ -72,6 +73,7 @@ export default function RetroRankings({
 
             {/* 曲情報 */}
             <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5" style={{ minWidth: 0 }}>
               <p
                 style={{
                   color: isActive ? "#2A1208" : "#3D2010",
@@ -81,13 +83,44 @@ export default function RetroRankings({
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
+                  flex: 1,
+                  minWidth: 0,
                 }}
               >
                 {t.title}
               </p>
+              {t.hasLyrics && (
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onLyricsClick(trackIdx);
+                  }}
+                  style={{
+                    flexShrink: 0,
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    color: "#fff",
+                    background: "linear-gradient(135deg, #D65076, #ff80a8)",
+                    borderRadius: 10,
+                    padding: "2px 7px",
+                    fontFamily: FONT,
+                    lineHeight: 1.6,
+                    boxShadow: "0 1px 6px rgba(214,80,118,0.4)",
+                    whiteSpace: "nowrap",
+                    cursor: "pointer",
+                    transition: "opacity 0.15s",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                >
+                  ♪ 歌詞
+                </span>
+              )}
+              </div>
 
               {/* いいね数 + 再生数 */}
-              <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex items-center gap-2 mt-0.5" style={{ paddingLeft: 0 }}>
                 <span className="flex items-center gap-0.5 tabular-nums" style={{ fontSize: 11, color: liked ? BRAND : "#B09070", fontFamily: FONT }}>
                   <Heart size={10} fill={liked ? BRAND : "none"} color={liked ? BRAND : "#B09070"} strokeWidth={2} />
                   {entry.likes}
