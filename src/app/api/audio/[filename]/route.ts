@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-
-const AUDIO_DIR =
-  "C:\\Users\\iceman\\ICEMANIA Dropbox\\★日本アイスマニア協会\\a_アイスの歌\\AI-SONG\\w_wav\\b_BGM京都2026";
+import { AUDIO_DIR } from "@/lib/audioDir.mjs";
 
 export async function GET(
   req: NextRequest,

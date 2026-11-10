@@ -14,9 +14,7 @@
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
-
-const WAV_DIR =
-  "C:/Users/iceman/ICEMANIA Dropbox/★日本アイスマニア協会/a_アイスの歌/AI-SONG/w_wav/b_BGM京都2026";
+import { AUDIO_DIR as WAV_DIR } from "../src/lib/audioDir.mjs";
 
 const MP3_DIR =
   "C:/Users/iceman/ICEMANIA Dropbox/★日本アイスマニア協会/a_アイスの歌/AI-SONG/w_wav/変換/mp3";

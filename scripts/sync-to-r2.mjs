@@ -23,12 +23,11 @@ import { execSync } from "child_process";
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { AUDIO_DIR } from "../src/lib/audioDir.mjs";
 
 // ──────────────────────────────────────────────
 // 設定
 // ──────────────────────────────────────────────
-const AUDIO_DIR =
-  "C:\\Users\\iceman\\ICEMANIA Dropbox\\★日本アイスマニア協会\\a_アイスの歌\\AI-SONG\\w_wav\\b_BGM京都2026";
 const META_FILE = path.join(AUDIO_DIR, "tracks-meta.json");
 
 // 並列アップロード数（変換+アップロードなので控えめに）
