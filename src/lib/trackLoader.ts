@@ -147,6 +147,9 @@ async function annotateHasLyrics(tracks: Track[]): Promise<Track[]> {
   });
 }
 
+/** R2 の tracks.json をキャッシュする秒数（npm run sync-r2 後、サイトに反映されるまでの最大待ち時間） */
+const TRACKS_CACHE_SEC = 300;
+
 /**
  * サーバーコンポーネント用: 環境に応じて曲一覧を返す
  * 優先度: R2の tracks.json → ローカルDropboxフォルダ → tracks.ts ハードコードリスト
@@ -158,7 +161,7 @@ export async function loadTracksServer(): Promise<Track[]> {
     // 本番環境: R2の公開URLからトラックリストを取得
     try {
       const res = await fetch(`${r2Base}/tracks.json`, {
-        next: { revalidate: 3600 },
+        next: { revalidate: TRACKS_CACHE_SEC },
       });
       if (!res.ok) {
         console.error("R2 tracks.json fetch failed:", res.status);
