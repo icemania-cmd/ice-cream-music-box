@@ -12,13 +12,14 @@
  *
  * 処理内容:
  *   1. DropboxフォルダのWAVファイルを一覧
- *   2. tracks-meta.json を読んでメタデータをマージ
+ *   2. R2 の現在の tracks.json を読み、既存曲の id・曲順を引き継ぐ（新曲は固定曲の直後）
+ *      tracks-meta.json を読んでメタデータをマージ
  *   3. 各WAVをMP3（128kbps）に変換してR2: audio/<name.mp3> にアップロード
  *   4. tracks.json（曲リスト、filenameは.mp3）を R2 にアップロード
  *   5. tracks-meta.json を R2 にアップロード（バックアップ）
  */
 
-import { S3Client, PutObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, HeadObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { execSync } from "child_process";
 import fs from "fs";
 import os from "os";
@@ -29,6 +30,9 @@ import { AUDIO_DIR } from "../src/lib/audioDir.mjs";
 // 設定
 // ──────────────────────────────────────────────
 const META_FILE = path.join(AUDIO_DIR, "tracks-meta.json");
+
+// --dry-run を付けると、アップロードせず結果だけ表示する
+const DRY_RUN = process.argv.includes("--dry-run");
 
 // 並列アップロード数（変換+アップロードなので控えめに）
 const CONCURRENCY = 2;
@@ -142,6 +146,75 @@ async function uploadFile(key, body, contentType) {
   }));
 }
 
+/** 本番の tracks.json を取得（初回などで存在しなければ空配列） */
+async function fetchExistingTracks() {
+  try {
+    const res = await r2.send(new GetObjectCommand({ Bucket: BUCKET, Key: "tracks.json" }));
+    return JSON.parse(await res.Body.transformToString());
+  } catch (err) {
+    if (err?.name === "NoSuchKey") return [];
+    throw err;
+  }
+}
+
+/**
+ * 曲順とidを決める。
+ * 再生数・いいねは Redis に id 単位で保存されているため、既存曲の id は絶対に変えない。
+ * - 既存曲: 本番の id・曲順・ファイル名をそのまま維持（大文字小文字違いは同じ曲とみなす）
+ * - 新曲: 既存の最大id+1 から採番し、固定曲の直後に追加
+ * - フォルダから消えた曲: 一覧から外す
+ * ※ 最大idの曲を削除した直後に新曲を足すと、その id を再利用してしまう点に注意
+ */
+function planTrackOrder(wavFiles, existingTracks) {
+  const byMp3Lower = new Map(existingTracks.map((t) => [t.filename.toLowerCase(), t]));
+  const items = wavFiles.map((wavFilename) => {
+    const localMp3 = wavFilename.replace(/\.wav$/i, ".mp3");
+    const existing = byMp3Lower.get(localMp3.toLowerCase());
+    return { wavFilename, mp3Filename: existing?.filename ?? localMp3, existing };
+  });
+
+  const orderOf = new Map(existingTracks.map((t, i) => [t.id, i]));
+  const kept = items
+    .filter((it) => it.existing)
+    .sort((a, b) => orderOf.get(a.existing.id) - orderOf.get(b.existing.id))
+    .map((it) => ({ ...it, id: it.existing.id }));
+
+  let nextId = Math.max(0, ...existingTracks.map((t) => t.id)) + 1;
+  const added = items
+    .filter((it) => !it.existing)
+    .map((it) => ({ ...it, id: nextId++ }));
+
+  const isPinned = (it) => PINNED_TRACKS.includes(it.wavFilename);
+  const pinned = PINNED_TRACKS
+    .map((f) => [...kept, ...added].find((it) => it.wavFilename === f))
+    .filter(Boolean);
+  return [
+    ...pinned,
+    ...added.filter((it) => !isPinned(it)),
+    ...kept.filter((it) => !isPinned(it)),
+  ];
+}
+
+/** --dry-run: アップロードせず、本番との差分だけ表示 */
+function printDryRun(tracks, existingTracks) {
+  const FIELDS = ["title", "artist", "genre", "plays", "color", "filename"];
+  const oldById = new Map(existingTracks.map((t) => [t.id, t]));
+  const newIds = new Set(tracks.map((t) => t.id));
+  console.log("🧪 dry-run: R2 には何もアップロードしません\n");
+  tracks.forEach((t, i) => {
+    const old = oldById.get(t.id);
+    const changed = old ? FIELDS.filter((k) => old[k] !== t[k]) : [];
+    const mark = !old ? "🆕" : changed.length ? `✏️ ${changed.join(",")}` : "  ";
+    console.log(`  ${String(i + 1).padStart(2)}. [id ${t.id}] ${t.title} ${mark}`);
+  });
+  const removed = existingTracks.filter((t) => !newIds.has(t.id));
+  removed.forEach((t) => console.log(`  ❌ 削除: [id ${t.id}] ${t.title}`));
+  const orderChanged = existingTracks
+    .filter((t) => newIds.has(t.id))
+    .some((t, i) => t.id !== tracks.filter((n) => oldById.has(n.id))[i]?.id);
+  console.log(`\n既存曲の並び順: ${orderChanged ? "変更あり" : "変更なし"}`);
+}
+
 /** 並列数を制限してPromiseを実行 */
 async function pLimit(tasks, limit) {
   const results = [];
@@ -182,20 +255,16 @@ async function main() {
     console.log(`🚫 除外ファイル: ${EXCLUDED_FILES.join(", ")}\n`);
   }
 
-  // PINNED_TRACKSを先頭に、残りをランダム順でシャッフル
-  const pinned = PINNED_TRACKS.filter(f => wavFiles.includes(f));
-  const rest = wavFiles.filter(f => !PINNED_TRACKS.includes(f));
-  // Fisher-Yatesシャッフル
-  for (let i = rest.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [rest[i], rest[j]] = [rest[j], rest[i]];
-  }
-  const sortedFiles = [...pinned, ...rest];
+  // 現在の本番曲一覧（id・曲順を引き継ぐため）
+  const existingTracks = await fetchExistingTracks();
+  console.log(`📋 本番の既存曲: ${existingTracks.length}件\n`);
+  const plan = planTrackOrder(wavFiles, existingTracks);
 
-  if (pinned.length > 0) {
-    console.log(`📌 固定曲: ${pinned.join(", ")}\n`);
+  console.log(`📂 WAVファイル: ${plan.length}件\n`);
+  const newOnes = plan.filter((p) => !p.existing);
+  if (newOnes.length > 0) {
+    console.log(`🆕 新曲: ${newOnes.map((p) => `[${p.id}] ${p.wavFilename}`).join(", ")}\n`);
   }
-  console.log(`📂 WAVファイル: ${sortedFiles.length}件\n`);
 
   // 2. tracks-meta.json 読み込み
   let meta = {};
@@ -210,19 +279,25 @@ async function main() {
   }
 
   // 3. Track[] を構築（filenameは.mp3）
-  const tracks = sortedFiles.map((wavFilename, idx) => {
-    const mp3Filename = wavFilename.replace(/\.wav$/i, ".mp3");
+  // 優先順位: tracks-meta.json（完全一致） → 本番の既存値 → ファイル名から自動生成
+  const tracks = plan.map(({ wavFilename, mp3Filename, id, existing }) => {
     const m = meta[wavFilename] ?? {};
+    const e = existing ?? {};
     return {
-      id: idx + 1,
-      title: m.title ?? titleFromFilename(wavFilename),
-      artist: m.artist ?? "AI-SONG",
-      genre: m.genre ?? "BGM",
-      plays: m.plays ?? 0,
-      color: m.color ?? colorFromFilename(wavFilename),
+      id,
+      title: m.title ?? e.title ?? titleFromFilename(wavFilename),
+      artist: m.artist ?? e.artist ?? "AI-SONG",
+      genre: m.genre ?? e.genre ?? "BGM",
+      plays: m.plays ?? e.plays ?? 0,
+      color: m.color ?? e.color ?? colorFromFilename(wavFilename),
       filename: mp3Filename,
     };
   });
+
+  if (DRY_RUN) {
+    printDryRun(tracks, existingTracks);
+    return;
+  }
 
   // 4. WAV→MP3変換してR2にアップロード（既存はスキップ）
   console.log("🎵 WAV→MP3変換＆アップロード中...\n");
@@ -230,8 +305,7 @@ async function main() {
   let skipped = 0;
   const tmpDir = os.tmpdir();
 
-  const uploadTasks = sortedFiles.map((wavFilename) => async () => {
-    const mp3Filename = wavFilename.replace(/\.wav$/i, ".mp3");
+  const uploadTasks = plan.map(({ wavFilename, mp3Filename }) => async () => {
     const r2Key = `audio/${mp3Filename}`;
     const wavPath = path.join(AUDIO_DIR, wavFilename);
 
