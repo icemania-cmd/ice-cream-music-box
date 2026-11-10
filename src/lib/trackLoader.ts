@@ -72,6 +72,7 @@ export function loadTracksFromFolder(): Track[] {
       filename,
       gain:   m.gain   ?? 1.0,
       ...(m.isNew ? { isNew: true } : {}),
+      ...(m.mv ? { mv: m.mv } : {}),
     };
   });
   // 新曲を先頭へ（本番の sync-to-r2.mjs と同じ並び）

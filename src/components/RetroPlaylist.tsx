@@ -281,6 +281,27 @@ export default function RetroPlaylist({
                         ✨ 新曲
                       </span>
                     )}
+                    {t.mv && (
+                      <span
+                        title="MVあり"
+                        style={{
+                          flexShrink: 0,
+                          fontSize: 9,
+                          fontWeight: 700,
+                          letterSpacing: "0.08em",
+                          color: "#fff",
+                          background: "linear-gradient(135deg, #3D2010, #7A4A28)",
+                          borderRadius: 10,
+                          padding: "2px 7px",
+                          fontFamily: FONT,
+                          lineHeight: 1.6,
+                          boxShadow: "0 1px 6px rgba(61,32,16,0.35)",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        🎬 MV
+                      </span>
+                    )}
                     {hasLyrics && (
                       <span
                         onClick={(e) => {

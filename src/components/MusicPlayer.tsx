@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Track } from "@/lib/tracks";
+import { Track, getMvUrl } from "@/lib/tracks";
 import { useAudioEngine } from "@/hooks/useAudioEngine";
 import { useMediaSession } from "@/hooks/useMediaSession";
 import VinylRecord from "./VinylRecord";
+import MvPlayer from "./MvPlayer";
 import RetroPlaylist from "./RetroPlaylist";
 import RetroRankings from "./RetroRankings";
 import NowPlayingModal from "./NowPlayingModal";
@@ -293,6 +294,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
   } = engine;
 
   const elapsed = progress * duration;
+  const mvUrl = getMvUrl(track?.mv);
   const lyricsFilename = track?.filename?.replace(/\.[^.]+$/, "") ?? "";
   const { lines: lyricsLines, currentIndex: lyricsIndex, status: lyricsStatus } = useLyrics(lyricsFilename, elapsed);
 
@@ -603,7 +605,10 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
             gap: 12,
             boxShadow: "inset 0 -6px 20px rgba(0,0,0,0.35), inset 0 2px 8px rgba(0,0,0,0.2)",
           }}>
-            {/* ターンテーブル台（シルバー）+ レコード + アーム */}
+            {/* MVがある曲はMV、なければターンテーブル台（シルバー）+ レコード + アーム */}
+            {mvUrl ? (
+              <MvPlayer key={mvUrl} src={mvUrl} isPlaying={isPlaying} elapsed={elapsed} onClick={() => setShowNowPlaying(true)} />
+            ) : (
             <div className="relative flex items-center justify-center"
               style={{
                 width: "min(160px, calc(100vw - 40px))",
@@ -626,6 +631,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
               </div>
               <ToneArm isPlaying={isPlaying} />
             </div>
+            )}
 
             {/* 曲情報（木目背景の上） */}
             <div className="text-center" style={{ maxWidth: "min(160px, calc(100vw - 40px))" }}>

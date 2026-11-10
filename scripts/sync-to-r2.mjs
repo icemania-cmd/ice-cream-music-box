@@ -197,7 +197,7 @@ function planTrackOrder(wavFiles, existingTracks) {
 
 /** --dry-run: アップロードせず、本番との差分だけ表示 */
 function printDryRun(tracks, existingTracks) {
-  const FIELDS = ["title", "artist", "genre", "plays", "color", "filename", "isNew"];
+  const FIELDS = ["title", "artist", "genre", "plays", "color", "filename", "isNew", "mv"];
   const oldById = new Map(existingTracks.map((t) => [t.id, t]));
   const newIds = new Set(tracks.map((t) => t.id));
   console.log("🧪 dry-run: R2 には何もアップロードしません\n");
@@ -293,6 +293,8 @@ async function main() {
       filename: mp3Filename,
       // isNew は tracks-meta.json だけで管理（外せば NEW 表示が消える）
       ...(m.isNew ? { isNew: true } : {}),
+      // mv は R2: mv/<ファイル名>（scripts/upload-mv.mjs でアップロード）
+      ...(m.mv ? { mv: m.mv } : {}),
     };
   });
   // 新曲（isNew）は一覧の先頭へ

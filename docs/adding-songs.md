@@ -42,6 +42,22 @@ ICEMANIA Dropbox\★日本アイスマニア協会\a_アイスの歌\AI-SONG\w_w
 - 新曲は新しい番号が振られ、固定曲（`PINNED_TRACKS`）のすぐ後ろに入る
 - フォルダから消した曲は一覧から外れる
 
+## 新曲として目立たせる（任意）
+
+`tracks-meta.json` の曲に `"isNew": true` を書いて `npm run sync-r2` すると、一覧の先頭（01 の上）に「NEW」として表示されます。
+外すときは `isNew` を消して再度 `npm run sync-r2`。
+
+## MV を付ける（任意）
+
+1. 動画を変換して R2 にアップロード（H.264 / 720p / 音声なしに自動変換。数分かかる）
+   ```bash
+   node --env-file=.env.local scripts/upload-mv.mjs "<元動画のパス>" "<曲名>.mp4"
+   ```
+2. `tracks-meta.json` の曲に `"mv": "<曲名>.mp4"` を書く
+3. `npm run sync-r2`
+
+MV のある曲は、プレイリストに「🎬 MV」が付き、再生中はレコードの代わりに MV が流れます（音声に合わせて再生・停止・シーク）。
+
 ## 差し替え・非表示
 
 - 新しいバージョンに差し替えたときは、古い WAV を `scripts/sync-to-r2.mjs` の `EXCLUDED_FILES` に入れると一覧から消える

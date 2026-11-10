@@ -9,6 +9,14 @@ export type Track = {
   gain: number; // RMS正規化係数 (基準: -16dBFS)
   hasLyrics?: boolean; // R2に対応するLRCファイルが存在するか
   isNew?: boolean; // 新曲（一覧の先頭に「NEW」として目立たせて表示）
+  mv?: string; // MV動画のファイル名（R2: mv/<mv>）。あればレコードの代わりにMVを表示
+};
+
+/** MV動画のURL（R2未設定のローカル開発では null = レコード表示） */
+export const getMvUrl = (mv: string | undefined): string | null => {
+  const base = process.env.NEXT_PUBLIC_R2_URL;
+  if (!mv || !base) return null;
+  return `${base}/mv/${encodeURIComponent(mv)}`;
 };
 
 export const tracks: Track[] = [
