@@ -60,7 +60,7 @@ export function loadTracksFromFolder(): Track[] {
     }
   }
 
-  return files.map((filename, idx) => {
+  const list: Track[] = files.map((filename, idx) => {
     const m = meta[filename] ?? {};
     return {
       id: idx + 1,
@@ -71,8 +71,11 @@ export function loadTracksFromFolder(): Track[] {
       color:  m.color  ?? colorFromFilename(filename),
       filename,
       gain:   m.gain   ?? 1.0,
+      ...(m.isNew ? { isNew: true } : {}),
     };
   });
+  // 新曲を先頭へ（本番の sync-to-r2.mjs と同じ並び）
+  return [...list.filter((t) => t.isNew), ...list.filter((t) => !t.isNew)];
 }
 
 /** 現在のメタファイルを読み込む（存在しなければ空） */

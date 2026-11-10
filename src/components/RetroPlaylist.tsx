@@ -69,6 +69,14 @@ export default function RetroPlaylist({
     setPage(0);
   }, [query]);
 
+  // 表示番号: 新曲（NEW 表示）は番号に数えず、既存曲を 01 から振る
+  const displayNumbers = new Map<number, number>();
+  tracks.reduce((n, t) => {
+    if (t.isNew) return n;
+    displayNumbers.set(t.id, n + 1);
+    return n + 1;
+  }, 0);
+
   const displayedItems = isSearching
     ? filtered
     : filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
@@ -194,22 +202,30 @@ export default function RetroPlaylist({
                 onClick={() => onSelect(originalIdx)}
                 className="w-full text-left flex items-center gap-3 px-4 py-2.5 transition-colors retro-list-item"
                 style={{
-                  background: isCurrent ? "#FFF8F0" : "transparent",
-                  borderLeft: isCurrent ? `3px solid #C8860A` : "3px solid transparent",
+                  background: t.isNew
+                    ? "linear-gradient(90deg, #FFE9F0 0%, #FFF6EC 100%)"
+                    : isCurrent ? "#FFF8F0" : "transparent",
+                  borderLeft: isCurrent
+                    ? `3px solid #C8860A`
+                    : t.isNew ? `3px solid ${BRAND}` : "3px solid transparent",
+                  borderBottom: t.isNew ? "1px solid #F5C9D6" : undefined,
                   cursor: "pointer",
                 }}
               >
-                {/* 番号 */}
+                {/* 番号（新曲は NEW） */}
                 <span
                   className="tabular-nums flex-shrink-0 text-right"
                   style={{
-                    fontSize: 11,
+                    fontSize: t.isNew ? 9 : 11,
+                    fontWeight: t.isNew ? 800 : 400,
+                    letterSpacing: t.isNew ? "0.02em" : "normal",
                     width: 20,
-                    color: isCurrent ? "#C8860A" : "#B09070",
+                    whiteSpace: "nowrap",
+                    color: t.isNew ? BRAND : isCurrent ? "#C8860A" : "#B09070",
                     fontFamily: FONT,
                   }}
                 >
-                  {String(originalIdx + 1).padStart(2, "0")}
+                  {t.isNew ? "NEW" : String(displayNumbers.get(t.id) ?? 0).padStart(2, "0")}
                 </span>
 
                 {/* イコライザー / ドット */}
@@ -245,6 +261,26 @@ export default function RetroPlaylist({
                     >
                       {t.title}
                     </p>
+                    {t.isNew && (
+                      <span
+                        style={{
+                          flexShrink: 0,
+                          fontSize: 9,
+                          fontWeight: 700,
+                          letterSpacing: "0.08em",
+                          color: "#fff",
+                          background: "linear-gradient(135deg, #E8A317, #F5C04A)",
+                          borderRadius: 10,
+                          padding: "2px 7px",
+                          fontFamily: FONT,
+                          lineHeight: 1.6,
+                          boxShadow: "0 1px 6px rgba(232,163,23,0.4)",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        ✨ 新曲
+                      </span>
+                    )}
                     {hasLyrics && (
                       <span
                         onClick={(e) => {

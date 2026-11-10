@@ -8,6 +8,7 @@ export type Track = {
   filename: string; // 音声ファイル名
   gain: number; // RMS正規化係数 (基準: -16dBFS)
   hasLyrics?: boolean; // R2に対応するLRCファイルが存在するか
+  isNew?: boolean; // 新曲（一覧の先頭に「NEW」として目立たせて表示）
 };
 
 export const tracks: Track[] = [

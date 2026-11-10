@@ -197,7 +197,7 @@ function planTrackOrder(wavFiles, existingTracks) {
 
 /** --dry-run: アップロードせず、本番との差分だけ表示 */
 function printDryRun(tracks, existingTracks) {
-  const FIELDS = ["title", "artist", "genre", "plays", "color", "filename"];
+  const FIELDS = ["title", "artist", "genre", "plays", "color", "filename", "isNew"];
   const oldById = new Map(existingTracks.map((t) => [t.id, t]));
   const newIds = new Set(tracks.map((t) => t.id));
   console.log("🧪 dry-run: R2 には何もアップロードしません\n");
@@ -280,7 +280,7 @@ async function main() {
 
   // 3. Track[] を構築（filenameは.mp3）
   // 優先順位: tracks-meta.json（完全一致） → 本番の既存値 → ファイル名から自動生成
-  const tracks = plan.map(({ wavFilename, mp3Filename, id, existing }) => {
+  const built = plan.map(({ wavFilename, mp3Filename, id, existing }) => {
     const m = meta[wavFilename] ?? {};
     const e = existing ?? {};
     return {
@@ -291,8 +291,12 @@ async function main() {
       plays: m.plays ?? e.plays ?? 0,
       color: m.color ?? e.color ?? colorFromFilename(wavFilename),
       filename: mp3Filename,
+      // isNew は tracks-meta.json だけで管理（外せば NEW 表示が消える）
+      ...(m.isNew ? { isNew: true } : {}),
     };
   });
+  // 新曲（isNew）は一覧の先頭へ
+  const tracks = [...built.filter((t) => t.isNew), ...built.filter((t) => !t.isNew)];
 
   if (DRY_RUN) {
     printDryRun(tracks, existingTracks);
