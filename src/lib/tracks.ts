@@ -19,6 +19,10 @@ export const getMvUrl = (mv: string | undefined): string | null => {
   return `${base}/mv/${encodeURIComponent(mv)}`;
 };
 
+/** MVのキービジュアル（R2 の mv/<同じ名前>.jpg。upload-mv.mjs でカバー画像を渡すと置かれる） */
+export const getMvCoverUrl = (mv: string | undefined): string | null =>
+  getMvUrl(mv?.replace(/\.mp4$/i, ".jpg"));
+
 export const tracks: Track[] = [
   {
     id: 1,

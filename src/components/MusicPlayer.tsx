@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Track, getMvUrl } from "@/lib/tracks";
+import { Track, getMvUrl, getMvCoverUrl } from "@/lib/tracks";
 import { useAudioEngine } from "@/hooks/useAudioEngine";
 import { useMediaSession } from "@/hooks/useMediaSession";
 import VinylRecord from "./VinylRecord";
@@ -607,7 +607,7 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
           }}>
             {/* MVがある曲はMV、なければターンテーブル台（シルバー）+ レコード + アーム */}
             {mvUrl ? (
-              <MvPlayer key={mvUrl} src={mvUrl} isPlaying={isPlaying} elapsed={elapsed} onClick={() => setShowNowPlaying(true)} />
+              <MvPlayer key={mvUrl} src={mvUrl} coverSrc={getMvCoverUrl(track?.mv)} isPlaying={isPlaying} elapsed={elapsed} onClick={() => setShowNowPlaying(true)} onPlay={play} />
             ) : (
             <div className="relative flex items-center justify-center"
               style={{
