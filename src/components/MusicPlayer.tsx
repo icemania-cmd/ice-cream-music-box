@@ -298,7 +298,8 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
   const lyricsFilename = track?.filename?.replace(/\.[^.]+$/, "") ?? "";
   const { lines: lyricsLines, currentIndex: lyricsIndex, status: lyricsStatus } = useLyrics(lyricsFilename, elapsed);
 
-  // 起動時: URLの ?track=<id> を読んで該当曲を選択
+  // 起動時: URLの ?track=<id>（シェアボタンのリンク）を読んで該当曲を選択。
+  // 曲を変えてもアドレスバーには書き込まない（再読み込みや履歴から開いたときは一覧の先頭＝新曲を出すため）
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
@@ -310,14 +311,6 @@ export default function MusicPlayer({ initialTracks }: { initialTracks: Track[] 
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // マウント時1回のみ
-
-  // 再生中の曲が変わったらURLを更新（ブラウザ履歴には残さない）
-  useEffect(() => {
-    if (typeof window === "undefined" || !track) return;
-    const url = new URL(window.location.href);
-    url.searchParams.set("track", String(track.id));
-    window.history.replaceState(null, "", url.toString());
-  }, [track]);
 
   // マウント時: ランキングデータ取得 + localStorageからいいね済みリスト読込
   useEffect(() => {
