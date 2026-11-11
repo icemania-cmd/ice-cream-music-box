@@ -3,6 +3,9 @@
  *
  * 使い方:
  *   node --env-file=.env.local scripts/sync-to-r2.mjs
+ *   node --env-file=.env.local scripts/sync-to-r2.mjs --replace "曲名.wav"
+ *     同じファイル名のまま音源を新しいバージョンに差し替えたとき、その曲だけMP3を上書きする
+ *     （id・再生数・いいねはそのまま。複数曲は --replace を繰り返す）
  *
  * 前提条件:
  *   ffmpeg がインストールされていること
@@ -33,6 +36,10 @@ const META_FILE = path.join(AUDIO_DIR, "tracks-meta.json");
 
 // --dry-run を付けると、アップロードせず結果だけ表示する
 const DRY_RUN = process.argv.includes("--dry-run");
+
+// --replace "<wav名>" で指定した曲は、R2 に MP3 があっても上書きする
+const REPLACE_FILES = process.argv
+  .flatMap((arg, i, all) => (arg === "--replace" && all[i + 1] ? [all[i + 1]] : []));
 
 // 並列アップロード数（変換+アップロードなので控えめに）
 const CONCURRENCY = 2;
@@ -261,6 +268,14 @@ async function main() {
   const plan = planTrackOrder(wavFiles, existingTracks);
 
   console.log(`📂 WAVファイル: ${plan.length}件\n`);
+  const unknownReplace = REPLACE_FILES.filter((f) => !plan.some((p) => p.wavFilename === f));
+  if (unknownReplace.length > 0) {
+    console.error(`❌ --replace の曲がフォルダにありません: ${unknownReplace.join(", ")}`);
+    process.exit(1);
+  }
+  if (REPLACE_FILES.length > 0) {
+    console.log(`🔁 音源を上書き: ${REPLACE_FILES.join(", ")}\n`);
+  }
   const newOnes = plan.filter((p) => !p.existing);
   if (newOnes.length > 0) {
     console.log(`🆕 新曲: ${newOnes.map((p) => `[${p.id}] ${p.wavFilename}`).join(", ")}\n`);
@@ -315,7 +330,7 @@ async function main() {
     const r2Key = `audio/${mp3Filename}`;
     const wavPath = path.join(AUDIO_DIR, wavFilename);
 
-    const exists = await existsInR2(r2Key);
+    const exists = !REPLACE_FILES.includes(wavFilename) && await existsInR2(r2Key);
     if (exists) {
       const stat = fs.statSync(wavPath);
       console.log(`  ⏭️  スキップ: ${mp3Filename} (WAV: ${(stat.size / 1024 / 1024).toFixed(1)}MB) — R2に存在`);
